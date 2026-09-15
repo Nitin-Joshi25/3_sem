@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Introduction to Data &amp; Types of Data — Module 1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+<style>
+  :root{
+    --ink:#14181F;
+    --paper:#F4F6F5;
+    --panel:#FFFFFF;
+    --line:#DCE3E1;
+    --teal:#0E7C86;
+    --teal-soft:#E4F1F1;
+    --amber:#D98E31;
+    --amber-soft:#FBEEDD;
+    --violet:#6E5A9E;
+    --violet-soft:#EDE9F5;
+    --coral:#C0524A;
+    --coral-soft:#F7E7E5;
+    --green:#3E8E5A;
+    --green-soft:#E6F1EA;
+    --slate:#5B6570;
+    --radius-sm:4px;
+    --radius-md:8px;
+    --maxw:920px;
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'IBM Plex Sans',sans-serif;
+    font-size:16px;
+    line-height:1.65;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,h4{
+    font-family:'Space Grotesk',sans-serif;
+    color:var(--ink);
+    line-height:1.2;
+    margin:0 0 .5em 0;
+  }
+  code, .mono{font-family:'IBM Plex Mono',monospace;}
+  p{max-width:72ch;}
+  a{color:var(--teal);}
+
+  /* ---------- Layout shell ---------- */
+  .shell{
+    display:grid;
+    grid-template-columns:240px minmax(0,1fr);
+    max-width:1240px;
+    margin:0 auto;
+  }
+  @media (max-width:880px){
+    .shell{grid-template-columns:1fr;}
+    .toc{display:none;}
+  }
+
+  /* ---------- Top bar ---------- */
+  .topbar{
+    background:var(--ink);
+    color:#EDEFEC;
+    padding:14px 32px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12.5px;
+    letter-spacing:.02em;
+  }
+  .topbar .mark{display:flex;align-items:center;gap:10px;color:#EDEFEC;}
+  .topbar .mark svg{display:block;}
+  .topbar .path{color:#8B9490;}
+  .topbar .path b{color:#EDEFEC;font-weight:500;}
+
+  /* ---------- TOC ---------- */
+  .toc{
+    padding:40px 20px 40px 32px;
+    position:sticky;
+    top:0;
+    align-self:start;
+    height:100vh;
+    overflow-y:auto;
+  }
+  .toc .toc-label{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    color:var(--slate);
+    margin-bottom:14px;
+  }
+  .toc ol{
+    list-style:none;
+    margin:0;padding:0;
+    border-left:1px solid var(--line);
+  }
+  .toc li{margin:0;}
+  .toc a{
+    display:block;
+    text-decoration:none;
+    color:var(--slate);
+    font-size:13.5px;
+    padding:7px 0 7px 16px;
+    margin-left:-1px;
+    border-left:2px solid transparent;
+    transition:color .15s ease, border-color .15s ease;
+  }
+  .toc a:hover{color:var(--ink);}
+  .toc a.active{
+    color:var(--ink);
+    border-left:2px solid var(--teal);
+    font-weight:500;
+  }
+
+  /* ---------- Main content ---------- */
+  main{padding:0 32px 100px;}
+  .content-inner{max-width:var(--maxw);}
+
+  .hero{
+    padding:64px 0 40px;
+    border-bottom:1px solid var(--line);
+    margin-bottom:56px;
+  }
+  .hero .eyebrow{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12.5px;
+    color:var(--teal);
+    margin-bottom:16px;
+  }
+  .hero h1{
+    font-size:clamp(30px,4vw,44px);
+    max-width:14ch;
+    letter-spacing:-.01em;
+  }
+  .hero .sub{
+    color:var(--slate);
+    max-width:56ch;
+    font-size:16.5px;
+    margin-top:14px;
+  }
+
+  .hero-demo{
+    margin-top:36px;
+    display:grid;
+    grid-template-columns:1fr 44px 1fr;
+    align-items:center;
+    gap:0;
+  }
+  @media (max-width:640px){
+    .hero-demo{grid-template-columns:1fr; gap:16px;}
+    .hero-demo .hd-arrow{transform:rotate(90deg); margin:0 auto;}
+  }
+  .hd-card{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:var(--radius-md);
+    padding:18px 20px;
+  }
+  .hd-card .hd-tag{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10.5px;
+    text-transform:uppercase;
+    letter-spacing:.06em;
+    color:var(--slate);
+    margin-bottom:10px;
+  }
+  .hd-field{
+    display:flex;
+    justify-content:space-between;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:13px;
+    padding:4px 0;
+    border-bottom:1px dashed var(--line);
+  }
+  .hd-field:last-child{border-bottom:none;}
+  .hd-field span:first-child{color:var(--slate);}
+  .hd-card.raw{border-top:3px solid var(--amber);}
+  .hd-card.info{border-top:3px solid var(--teal);}
+  .hd-arrow{display:flex;align-items:center;justify-content:center;color:var(--slate);}
+
+  /* ---------- Sections ---------- */
+  section.block{margin-bottom:72px;}
+  .sec-num{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12.5px;
+    color:var(--teal);
+    margin-bottom:6px;
+  }
+  section.block h2{font-size:26px;margin-bottom:14px;}
+  section.block > p.lead{color:var(--ink);font-size:16.5px;}
+
+  /* ---------- Analogy split ---------- */
+  .analogy{
+    display:grid;
+    grid-template-columns:1fr 60px 1fr;
+    gap:0;
+    margin:28px 0;
+    align-items:stretch;
+  }
+  @media (max-width:640px){
+    .analogy{grid-template-columns:1fr;}
+    .analogy .an-arrow{transform:rotate(90deg);margin:8px auto;}
+  }
+  .an-panel{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:var(--radius-md);
+    padding:22px;
+  }
+  .an-panel h4{font-size:14px;font-family:'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:.04em;color:var(--slate);margin-bottom:14px;font-weight:500;}
+  .an-panel ul{margin:0;padding:0;list-style:none;}
+  .an-panel li{
+    font-size:14.5px;
+    padding:8px 0;
+    border-bottom:1px solid var(--line);
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .an-panel li:last-child{border-bottom:none;}
+  .an-panel li .dot{width:6px;height:6px;border-radius:50%;background:var(--amber);flex-shrink:0;}
+  .an-panel.result li .dot{background:var(--teal);}
+  .an-arrow{display:flex;align-items:center;justify-content:center;color:var(--slate);}
+
+  /* ---------- Pipeline flowchart ---------- */
+  .pipeline-wrap{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:var(--radius-md);
+    padding:28px 24px;
+    margin:28px 0;
+  }
+  .pipeline-wrap svg{width:100%;height:auto;display:block;}
+
+  .scale-compare{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:16px;
+    margin-top:24px;
+  }
+  @media (max-width:640px){.scale-compare{grid-template-columns:1fr;}}
+  .customer-card{
+    border:1px solid var(--line);
+    border-radius:var(--radius-md);
+    background:var(--panel);
+    padding:18px 20px;
+  }
+  .customer-card .cc-label{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    color:var(--slate);
+    text-transform:uppercase;
+    letter-spacing:.05em;
+    margin-bottom:10px;
+  }
+  .customer-card .cc-row{
+    display:flex;justify-content:space-between;
+    font-size:14px;padding:5px 0;
+    border-bottom:1px dashed var(--line);
+  }
+  .customer-card .cc-row:last-child{border:none;}
+  .customer-card .cc-row b{font-family:'IBM Plex Mono',monospace;font-weight:600;}
+  .note-strip{
+    margin-top:18px;
+    border-left:3px solid var(--amber);
+    background:var(--amber-soft);
+    padding:12px 16px;
+    font-size:14.5px;
+    border-radius:0 var(--radius-sm) var(--radius-sm) 0;
+  }
+
+  /* ---------- Taxonomy tree ---------- */
+  .taxonomy-wrap{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:var(--radius-md);
+    padding:30px 20px;
+    margin:28px 0;
+    overflow-x:auto;
+  }
+  .taxonomy-wrap svg{display:block;margin:0 auto;min-width:640px;}
+
+  .legend{
+    display:flex;
+    flex-wrap:wrap;
+    gap:18px;
+    margin-top:22px;
+    padding-top:18px;
+    border-top:1px solid var(--line);
+  }
+  .legend .lg-item{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--slate);}
+  .legend .lg-swatch{width:11px;height:11px;border-radius:2px;}
+
+  /* ---------- Type detail cards ---------- */
+  .type-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:18px;
+    margin:24px 0;
+  }
+  @media (max-width:640px){.type-grid{grid-template-columns:1fr;}}
+  .type-card{
+    border:1px solid var(--line);
+    border-radius:var(--radius-md);
+    background:var(--panel);
+    overflow:hidden;
+  }
+  .type-card .tc-head{
+    padding:14px 18px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+  }
+  .type-card .tc-head h4{margin:0;font-size:15px;font-family:'Space Grotesk',sans-serif;}
+  .type-card .tc-tag{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10px;
+    padding:3px 8px;
+    border-radius:20px;
+    text-transform:uppercase;
+    letter-spacing:.04em;
+    font-weight:500;
+  }
+  .type-card .tc-body{padding:0 18px 18px;}
+  .type-card .tc-body p{font-size:13.5px;color:var(--slate);margin:0 0 12px;max-width:none;}
+  .type-card .tc-examples{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:13px;
+    background:var(--paper);
+    border-radius:var(--radius-sm);
+    padding:10px 12px;
+    line-height:1.9;
+  }
+  .type-card.numerical .tc-head{background:var(--teal-soft);}
+  .type-card.numerical .tc-tag{background:var(--teal);color:#fff;}
+  .type-card.categorical .tc-head{background:var(--amber-soft);}
+  .type-card.categorical .tc-tag{background:var(--amber);color:#fff;}
+  .type-card.text .tc-head{background:var(--violet-soft);}
+  .type-card.text .tc-tag{background:var(--violet);color:#fff;}
+  .type-card.boolean .tc-head{background:var(--coral-soft);}
+  .type-card.boolean .tc-tag{background:var(--coral);color:#fff;}
+
+  .bool-chip{
+    display:inline-block;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12.5px;
+    padding:3px 10px;
+    border-radius:20px;
+    font-weight:600;
+    margin-right:8px;
+  }
+  .bool-chip.t{background:var(--green-soft);color:var(--green);}
+  .bool-chip.f{background:var(--coral-soft);color:var(--coral);}
+
+  /* ---------- Code panel ---------- */
+  .code-panel{
+    background:#1B2027;
+    border-radius:var(--radius-md);
+    overflow:hidden;
+    margin:26px 0;
+    border:1px solid #2B323C;
+  }
+  .code-panel .cp-bar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:10px 16px;
+    background:#20262E;
+    border-bottom:1px solid #2B323C;
+  }
+  .cp-bar .cp-file{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12.5px;
+    color:#B8C0C7;
+  }
+  .cp-bar .cp-dots{display:flex;gap:6px;}
+  .cp-bar .cp-dots span{width:9px;height:9px;border-radius:50%;background:#3A4149;}
+  .copy-btn{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11.5px;
+    color:#B8C0C7;
+    background:#2B323C;
+    border:none;
+    border-radius:4px;
+    padding:5px 10px;
+    cursor:pointer;
+  }
+  .copy-btn:hover{background:#37404B;}
+  .code-panel pre{margin:0;padding:20px 22px;overflow-x:auto;font-size:13.5px;}
+  .code-panel code.hljs{background:transparent;padding:0;}
+  .code-output{
+    border-top:1px solid #2B323C;
+    background:#161A20;
+    padding:16px 22px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12.5px;
+    color:#8FBF9F;
+    white-space:pre;
+    overflow-x:auto;
+  }
+  .code-output .oh{color:#6C7783;}
+
+  /* ---------- Steps ---------- */
+  .steps{counter-reset:step;margin:26px 0;}
+  .step{
+    display:grid;
+    grid-template-columns:40px 1fr;
+    gap:16px;
+    padding:16px 0;
+    border-bottom:1px solid var(--line);
+  }
+  .step:last-child{border-bottom:none;}
+  .step .step-num{
+    counter-increment:step;
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:600;
+    font-size:15px;
+    color:var(--teal);
+    display:flex;
+    align-items:flex-start;
+    justify-content:center;
+    padding-top:2px;
+  }
+  .step .step-num::before{content:counter(step);}
+  .step h4{font-size:15px;margin-bottom:4px;}
+  .step p{font-size:14px;color:var(--slate);margin:0;}
+  .step code{
+    background:var(--teal-soft);
+    color:var(--teal);
+    padding:1px 6px;
+    border-radius:4px;
+    font-size:13px;
+  }
+
+  /* ---------- Outcome strip ---------- */
+  .outcome{
+    background:var(--ink);
+    color:#EDEFEC;
+    border-radius:var(--radius-md);
+    padding:32px 28px;
+    margin-top:8px;
+  }
+  .outcome .oc-label{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11.5px;
+    color:#8FBF9F;
+    margin-bottom:14px;
+    text-transform:uppercase;
+    letter-spacing:.05em;
+  }
+  .outcome .oc-flow{
+    display:flex;
+    flex-wrap:wrap;
+    align-items:center;
+    gap:10px;
+    font-family:'Space Grotesk',sans-serif;
+    font-size:19px;
+  }
+  .outcome .oc-flow .oc-node{
+    background:#1F252D;
+    border:1px solid #333B44;
+    padding:8px 16px;
+    border-radius:20px;
+  }
+  .outcome .oc-flow .oc-sep{color:#5B6570;}
+  .outcome p.oc-note{color:#9AA3AC;font-size:14px;margin-top:16px;max-width:60ch;}
+
+  footer{
+    text-align:center;
+    padding:36px 0 60px;
+    color:var(--slate);
+    font-size:12.5px;
+    font-family:'IBM Plex Mono',monospace;
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="mark">
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="9" width="3" height="6" fill="#0E7C86"/><rect x="6.5" y="5" width="3" height="10" fill="#D98E31"/><rect x="12" y="1" width="3" height="14" fill="#6E5A9E"/></svg>
+    DATA&nbsp;HANDLING&nbsp;·&nbsp;MODULE&nbsp;01
+  </div>
+  <div class="path">course<span>/</span><b>data-types</b><span>/</span>section-1</div>
+</div>
+
+<div class="shell">
+
+  <nav class="toc" id="toc">
+    <div class="toc-label">ON THIS PAGE</div>
+    <ol>
+      <li><a href="#s11" class="tocLink">1.1 What is data?</a></li>
+      <li><a href="#s12" class="tocLink">1.2 Why data handling matters</a></li>
+      <li><a href="#s13" class="tocLink">1.3 Types of data</a></li>
+      <li><a href="#s14" class="tocLink">1.4 Categorical data</a></li>
+      <li><a href="#s15" class="tocLink">1.5 Text data</a></li>
+      <li><a href="#s16" class="tocLink">1.6 Boolean data</a></li>
+      <li><a href="#code" class="tocLink">Practical code</a></li>
+      <li><a href="#steps" class="tocLink">Implementation steps</a></li>
+      <li><a href="#outcome" class="tocLink">Expected learning</a></li>
+    </ol>
+  </nav>
+
+  <main>
+    <div class="content-inner">
+
+      <div class="hero">
+        <div class="eyebrow">CHAPTER 01</div>
+        <h1>Introduction to Data &amp; Types of Data</h1>
+        <p class="sub">Every model, dashboard and business decision starts as a row of raw facts. This module builds the vocabulary and instincts needed to recognise, classify and prepare data before any analysis begins.</p>
+
+        <div class="hero-demo">
+          <div class="hd-card raw">
+            <div class="hd-tag">Raw data</div>
+            <div class="hd-field"><span>customer_id</span><span>10231</span></div>
+            <div class="hd-field"><span>product</span><span>Laptop</span></div>
+            <div class="hd-field"><span>price</span><span>₹58,000</span></div>
+            <div class="hd-field"><span>city</span><span>Delhi</span></div>
+          </div>
+          <div class="hd-arrow">
+            <svg width="28" height="16" viewBox="0 0 28 16" fill="none"><path d="M0 8H26M26 8L19 1M26 8L19 15" stroke="#5B6570" stroke-width="1.6"/></svg>
+          </div>
+          <div class="hd-card info">
+            <div class="hd-tag">Useful information</div>
+            <div class="hd-field"><span>Total Sales</span><span>₹2,45,000</span></div>
+            <div class="hd-field"><span>Avg. Order Value</span><span>₹1,240</span></div>
+            <div class="hd-field"><span>Top Product</span><span>Laptop</span></div>
+            <div class="hd-field"><span>Top City</span><span>Delhi</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 1.1 -->
+      <section class="block" id="s11">
+        <div class="sec-num">1.1</div>
+        <h2>What is data?</h2>
+        <p class="lead"><strong>Data</strong> is a collection of facts, observations or measurements that can be stored and processed to generate useful information.</p>
+        <p>A shopping application, for instance, collects a Customer ID, name, age, product, price, quantity, purchase date and location for every transaction. On its own this is <strong>raw data</strong> — accurate, but not yet meaningful. Only once it is aggregated does it turn into the metrics shown above: total sales, average order value, the best-selling product and the top city.</p>
+
+        <div class="analogy">
+          <div class="an-panel">
+            <h4>Raw ingredients</h4>
+            <ul>
+              <li><span class="dot"></span>Rice</li>
+              <li><span class="dot"></span>Vegetables</li>
+              <li><span class="dot"></span>Spices</li>
+              <li><span class="dot"></span>Oil</li>
+            </ul>
+          </div>
+          <div class="an-arrow">
+            <svg width="28" height="16" viewBox="0 0 28 16" fill="none"><path d="M0 8H26M26 8L19 1M26 8L19 15" stroke="#5B6570" stroke-width="1.6"/></svg>
+          </div>
+          <div class="an-panel result">
+            <h4>Meaningful information</h4>
+            <ul>
+              <li><span class="dot"></span>Biryani — a finished, useful dish</li>
+            </ul>
+          </div>
+        </div>
+        <p style="font-size:14px;color:var(--slate);">Think of a restaurant: raw ingredients are like raw data, and the cooking process — combining, transforming, seasoning — is the analysis that turns them into something useful.</p>
+      </section>
+
+      <!-- 1.2 -->
+      <section class="block" id="s12">
+        <div class="sec-num">1.2</div>
+        <h2>Why data handling matters</h2>
+        <p class="lead">Raw data rarely reaches a decision-maker in its original form. It passes through a consistent pipeline before it can be trusted or modelled.</p>
+
+        <div class="pipeline-wrap">
+          <svg viewBox="0 0 640 620" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M0 0L10 5L0 10z" fill="#5B6570"/>
+              </marker>
+            </defs>
+            <!-- nodes -->
+            <!-- 1 Raw Data -->
+            <rect x="180" y="10" width="280" height="52" rx="6" fill="#FBEEDD" stroke="#D98E31"/>
+            <text x="320" y="42" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-size="16" fill="#14181F" font-weight="600">Raw Data</text>
+            <line x1="320" y1="62" x2="320" y2="88" stroke="#5B6570" stroke-width="1.6" marker-end="url(#arrow)"/>
+
+            <!-- 2 Collection -->
+            <rect x="180" y="90" width="280" height="52" rx="6" fill="#FFFFFF" stroke="#DCE3E1"/>
+            <text x="320" y="122" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-size="16" fill="#14181F" font-weight="600">Collection</text>
+            <line x1="320" y1="142" x2="320" y2="168" stroke="#5B6570" stroke-width="1.6" marker-end="url(#arrow)"/>
+
+            <!-- 3 Storage -->
+            <rect x="180" y="170" width="280" height="52" rx="6" fill="#FFFFFF" stroke="#DCE3E1"/>
+            <text x="320" y="202" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-size="16" fill="#14181F" font-weight="600">Storage</text>
+            <line x1="320" y1="222" x2="320" y2="248" stroke="#5B6570" stroke-width="1.6" marker-end="url(#arrow)"/>
+
+            <!-- 4 Cleaning -->
+            <rect x="180" y="250" width="280" height="52" rx="6" fill="#FFFFFF" stroke="#DCE3E1"/>
+            <text x="320" y="282" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-size="16" fill="#14181F" font-weight="600">Cleaning</text>
+            <line x1="320" y1="302" x2="320" y2="328" stroke="#5B6570" stroke-width="1.6" marker-end="url(#arrow)"/>
+
+            <!-- 5 Transformation -->
+            <rect x="180" y="330" width="280" height="52" rx="6" fill="#FFFFFF" stroke="#DCE3E1"/>
+            <text x="320" y="362" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-size="16" fill="#14181F" font-weight="600">Transformation</text>
+            <line x1="320" y1="382" x2="320" y2="408" stroke="#5B6570" stroke-width="1.6" marker-end="url(#arrow)"/>
+
+            <!-- 6 Normalization -->
+            <rect x="150" y="410" width="340" height="52" rx="6" fill="#E4F1F1" stroke="#0E7C86"/>
+            <text x="320" y="442" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-size="16" fill="#14181F" font-weight="600">Normalization / Standardization</text>
+            <line x1="320" y1="462" x2="320" y2="488" stroke="#5B6570" stroke-width="1.6" marker-end="url(#arrow)"/>
+
+            <!-- 7 Analysis / ML -->
+            <rect x="150" y="490" width="340" height="52" rx="6" fill="#E4F1F1" stroke="#0E7C86"/>
+            <text x="320" y="522" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-size="16" fill="#14181F" font-weight="600">Analysis / Machine Learning</text>
+            <line x1="320" y1="542" x2="320" y2="568" stroke="#5B6570" stroke-width="1.6" marker-end="url(#arrow)"/>
+
+            <!-- 8 Business decision -->
+            <rect x="180" y="570" width="280" height="52" rx="6" fill="#14181F" stroke="#14181F"/>
+            <text x="320" y="602" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-size="16" fill="#EDEFEC" font-weight="600">Business Decision</text>
+          </svg>
+        </div>
+
+        <p>Consider an e-commerce company predicting whether a customer will purchase a product. Two customers may look like this:</p>
+
+        <div class="scale-compare">
+          <div class="customer-card">
+            <div class="cc-label">Customer A</div>
+            <div class="cc-row"><span>Age</span><b>24</b></div>
+            <div class="cc-row"><span>Income</span><b>45,000</b></div>
+            <div class="cc-row"><span>Visits</span><b>15</b></div>
+            <div class="cc-row"><span>Previous purchases</span><b>3</b></div>
+          </div>
+          <div class="customer-card">
+            <div class="cc-label">Customer B</div>
+            <div class="cc-row"><span>Age</span><b>45</b></div>
+            <div class="cc-row"><span>Income</span><b>2,50,000</b></div>
+            <div class="cc-row"><span>Visits</span><b>8</b></div>
+            <div class="cc-row"><span>Previous purchases</span><b>20</b></div>
+          </div>
+        </div>
+        <div class="note-strip">Income spans five digits while visits span single digits — features on very different scales. This is exactly why <strong>cleaning, transformation and normalization</strong> come before any model sees the data.</div>
+      </section>
+
+      <!-- 1.3 Types of data / taxonomy -->
+      <section class="block" id="s13">
+        <div class="sec-num">1.3</div>
+        <h2>Types of data</h2>
+        <p class="lead">Before data can be processed correctly, it must be classified. Every value in a dataset falls into one of four broad families.</p>
+
+        <div class="taxonomy-wrap">
+          <svg viewBox="0 0 720 300" xmlns="http://www.w3.org/2000/svg">
+            <!-- root -->
+            <rect x="300" y="8" width="120" height="42" rx="6" fill="#14181F"/>
+            <text x="360" y="34" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-size="14" fill="#EDEFEC" font-weight="600">Data</text>
+
+            <!-- connectors to 4 branches -->
+            <path d="M360 50 V70 H60 V90" stroke="#B7BEC1" stroke-width="1.4" fill="none"/>
+            <path d="M360 50 V70 H260 V90" stroke="#B7BEC1" stroke-width="1.4" fill="none"/>
+            <path d="M360 50 V70 H480 V90" stroke="#B7BEC1" stroke-width="1.4" fill="none"/>
+            <path d="M360 50 V70 H660 V90" stroke="#B7BEC1" stroke-width="1.4" fill="none"/>
+
+            <!-- Numerical -->
+            <rect x="10" y="92" width="100" height="40" rx="6" fill="#E4F1F1" stroke="#0E7C86"/>
+            <text x="60" y="117" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-size="12.5" fill="#0E7C86" font-weight="600">Numerical</text>
+            <!-- Categorical -->
+            <rect x="210" y="92" width="100" height="40" rx="6" fill="#FBEEDD" stroke="#D98E31"/>
+            <text x="260" y="117" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-size="12.5" fill="#D98E31" font-weight="600">Categorical</text>
+            <!-- Text -->
+            <rect x="430" y="92" width="100" height="40" rx="6" fill="#EDE9F5" stroke="#6E5A9E"/>
+            <text x="480" y="117" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-size="12.5" fill="#6E5A9E" font-weight="600">Text</text>
+            <!-- Boolean -->
+            <rect x="610" y="92" width="100" height="40" rx="6" fill="#F7E7E5" stroke="#C0524A"/>
+            <text x="660" y="117" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-size="12.5" fill="#C0524A" font-weight="600">Boolean</text>
+
+            <!-- Numerical children -->
+            <path d="M60 132 V150 H10 V168" stroke="#B7BEC1" stroke-width="1.2" fill="none"/>
+            <path d="M60 132 V150 H110 V168" stroke="#B7BEC1" stroke-width="1.2" fill="none"/>
+            <rect x="0" y="170" width="90" height="36" rx="6" fill="#FFFFFF" stroke="#0E7C86" stroke-dasharray="3 2"/>
+            <text x="45" y="192" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11.5" fill="#0E7C86">Discrete</text>
+            <rect x="100" y="170" width="90" height="36" rx="6" fill="#FFFFFF" stroke="#0E7C86" stroke-dasharray="3 2"/>
+            <text x="145" y="192" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11.5" fill="#0E7C86">Continuous</text>
+
+            <!-- Categorical children -->
+            <path d="M260 132 V150 H210 V168" stroke="#B7BEC1" stroke-width="1.2" fill="none"/>
+            <path d="M260 132 V150 H310 V168" stroke="#B7BEC1" stroke-width="1.2" fill="none"/>
+            <rect x="200" y="170" width="90" height="36" rx="6" fill="#FFFFFF" stroke="#D98E31" stroke-dasharray="3 2"/>
+            <text x="245" y="192" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11.5" fill="#D98E31">Nominal</text>
+            <rect x="300" y="170" width="90" height="36" rx="6" fill="#FFFFFF" stroke="#D98E31" stroke-dasharray="3 2"/>
+            <text x="345" y="192" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11.5" fill="#D98E31">Ordinal</text>
+          </svg>
+
+          <div class="legend">
+            <div class="lg-item"><span class="lg-swatch" style="background:#0E7C86"></span>Numerical — quantities</div>
+            <div class="lg-item"><span class="lg-swatch" style="background:#D98E31"></span>Categorical — labels/groups</div>
+            <div class="lg-item"><span class="lg-swatch" style="background:#6E5A9E"></span>Text — free-form language</div>
+            <div class="lg-item"><span class="lg-swatch" style="background:#C0524A"></span>Boolean — true / false logic</div>
+          </div>
+        </div>
+
+        <div class="type-grid">
+          <div class="type-card numerical">
+            <div class="tc-head"><h4>Discrete</h4><span class="tc-tag">Countable</span></div>
+            <div class="tc-body">
+              <p>Whole values you could count one by one — there is nothing "in between" them.</p>
+              <div class="tc-examples">Number of students = 50<br>Number of products = 10<br>Number of orders = 25</div>
+            </div>
+          </div>
+          <div class="type-card numerical">
+            <div class="tc-head"><h4>Continuous</h4><span class="tc-tag">Measured</span></div>
+            <div class="tc-body">
+              <p>Measurements that can take any value within a range, including decimals.</p>
+              <div class="tc-examples">Height = 172.5 cm<br>Weight = 68.7 kg<br>Temperature = 32.6°C</div>
+            </div>
+          </div>
+        </div>
+        <p style="font-size:14px;color:var(--slate);">Beyond age, salary, temperature and quantity, every numerical field belongs to one of these two families — the distinction decides how you're allowed to aggregate or bucket it later.</p>
+      </section>
+
+      <!-- 1.4 Categorical -->
+      <section class="block" id="s14">
+        <div class="sec-num">1.4</div>
+        <h2>Categorical data</h2>
+        <p class="lead">Categorical data represents groups or labels rather than quantities — values like <span class="mono">Gender = Male</span>, <span class="mono">City = Delhi</span>, <span class="mono">Payment = UPI</span> or <span class="mono">Product = Laptop</span>.</p>
+
+        <div class="type-grid">
+          <div class="type-card categorical">
+            <div class="tc-head"><h4>Nominal</h4><span class="tc-tag">No order</span></div>
+            <div class="tc-body">
+              <p>Categories that sit side by side, with no ranking between them.</p>
+              <div class="tc-examples">Delhi<br>Mumbai<br>Pune<br>Chennai</div>
+            </div>
+          </div>
+          <div class="type-card categorical">
+            <div class="tc-head"><h4>Ordinal</h4><span class="tc-tag">Has order</span></div>
+            <div class="tc-body">
+              <p>Categories that follow a natural sequence or ranking.</p>
+              <div class="tc-examples">Low<br>Medium<br>High</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 1.5 Text -->
+      <section class="block" id="s15">
+        <div class="sec-num">1.5</div>
+        <h2>Text data</h2>
+        <p class="lead">Free-form language, rich in meaning but unstructured until it is processed.</p>
+        <div class="type-card text" style="margin:20px 0;">
+          <div class="tc-head"><h4>Sample text data</h4><span class="tc-tag">Unstructured</span></div>
+          <div class="tc-body">
+            <div class="tc-examples">"Customer is very happy"<br>"Product delivery was late"<br>"Excellent service"</div>
+          </div>
+        </div>
+        <p style="font-size:14.5px;">Text data is the backbone of chat applications, product reviews, emails, social media posts and customer support tickets — anywhere a customer expresses something in their own words.</p>
+      </section>
+
+      <!-- 1.6 Boolean -->
+      <section class="block" id="s16">
+        <div class="sec-num">1.6</div>
+        <h2>Boolean data</h2>
+        <p class="lead">The simplest data type of all — exactly two logical values.</p>
+        <div class="type-card boolean" style="margin:20px 0;">
+          <div class="tc-head"><h4>True / False fields</h4><span class="tc-tag">Binary</span></div>
+          <div class="tc-body">
+            <p style="margin-bottom:14px;"><span class="bool-chip t">is_active = True</span><span class="bool-chip f">is_verified = False</span></p>
+            <p>Booleans drive conditions, filters and flags throughout an application — "is this user active?", "has this order shipped?"</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Code -->
+      <section class="block" id="code">
+        <div class="sec-num">PRACTICAL</div>
+        <h2>Understanding data types with pandas</h2>
+        <p class="lead">The clearest way to see these types side by side is to load them into a single table and ask pandas what it sees.</p>
+
+        <div class="code-panel">
+          <div class="cp-bar">
+            <div class="cp-dots"><span></span><span></span><span></span></div>
+            <div class="cp-file">data_types.py</div>
+            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          </div>
+          <pre><code class="language-python" id="code-block">import pandas as pd
+
+data = {
+    "name": ["Rahul", "Priya", "Amit"],
+    "age": [22, 25, 24],
+    "salary": [35000.0, 50000.0, 42000.0],
+    "city": ["Delhi", "Pune", "Mumbai"],
+    "is_active": [True, True, False]
+}
+
+df = pd.DataFrame(data)
+
+print(df)
+print("\nData Types:")
+print(df.dtypes)</code></pre>
+          <div class="code-output"><span class="oh">$ python data_types.py</span>
+    name  age   salary    city  is_active
+0  Rahul   22  35000.0   Delhi       True
+1  Priya   25  50000.0    Pune       True
+2   Amit   24  42000.0  Mumbai      False
+
+Data Types:
+name          object
+age            int64
+salary       float64
+city          object
+is_active       bool
+dtype: object</div>
+        </div>
+      </section>
+
+      <!-- Steps -->
+      <section class="block" id="steps">
+        <div class="sec-num">WALKTHROUGH</div>
+        <h2>Implementation steps</h2>
+        <div class="steps">
+          <div class="step">
+            <div class="step-num"></div>
+            <div><h4>Install Python</h4><p>Make sure a working Python 3 interpreter is available on your machine.</p></div>
+          </div>
+          <div class="step">
+            <div class="step-num"></div>
+            <div><h4>Install pandas</h4><p>Run <code>pip install pandas</code> from your terminal.</p></div>
+          </div>
+          <div class="step">
+            <div class="step-num"></div>
+            <div><h4>Create the script file</h4><p>Create a new file named <code>data_types.py</code> in your project folder.</p></div>
+          </div>
+          <div class="step">
+            <div class="step-num"></div>
+            <div><h4>Import pandas</h4><p>Add <code>import pandas as pd</code> at the top of the file.</p></div>
+          </div>
+          <div class="step">
+            <div class="step-num"></div>
+            <div><h4>Create dictionary data</h4><p>Define a Python dictionary where each key becomes a column and each list becomes its values.</p></div>
+          </div>
+          <div class="step">
+            <div class="step-num"></div>
+            <div><h4>Convert to a DataFrame</h4><p>Pass the dictionary into <code>pd.DataFrame(data)</code> to build a structured table.</p></div>
+          </div>
+          <div class="step">
+            <div class="step-num"></div>
+            <div><h4>Print the DataFrame</h4><p>Call <code>print(df)</code> to view rows and columns exactly as pandas has structured them.</p></div>
+          </div>
+          <div class="step">
+            <div class="step-num"></div>
+            <div><h4>Print the data types</h4><p>Call <code>print(df.dtypes)</code> to confirm how pandas classified each column — numeric, object or boolean.</p></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Outcome -->
+      <section class="block" id="outcome" style="margin-bottom:24px;">
+        <div class="sec-num">TAKEAWAY</div>
+        <h2>Expected learning</h2>
+        <div class="outcome">
+          <div class="oc-label">By the end of this module, students should trace:</div>
+          <div class="oc-flow">
+            <span class="oc-node">Data</span><span class="oc-sep">→</span>
+            <span class="oc-node">DataFrame</span><span class="oc-sep">→</span>
+            <span class="oc-node">Columns</span><span class="oc-sep">→</span>
+            <span class="oc-node">Data Types</span>
+          </div>
+          <p class="oc-note">Every later topic — cleaning, encoding, scaling, feature engineering — builds directly on correctly identifying whether a column is numerical, categorical, text or boolean.</p>
+        </div>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<footer>MODULE 01 — DATA HANDLING &amp; PREPROCESSING</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/python.min.js"></script>
+<script>
+  if (window.hljs) { hljs.highlightAll(); }
+
+  function copyCode(btn){
+    const code = document.getElementById('code-block').innerText;
+    navigator.clipboard.writeText(code).then(()=>{
+      const old = btn.textContent;
+      btn.textContent = 'Copied';
+      setTimeout(()=>btn.textContent = old, 1400);
+    });
+  }
+
+  // scroll spy
+  const links = document.querySelectorAll('.tocLink');
+  const sections = Array.from(links).map(l => document.querySelector(l.getAttribute('href')));
+  function onScroll(){
+    let current = sections[0];
+    const y = window.scrollY + 120;
+    sections.forEach(sec => { if (sec && sec.offsetTop <= y) current = sec; });
+    links.forEach(l => l.classList.toggle('active', l.getAttribute('href') === '#' + current.id));
+  }
+  window.addEventListener('scroll', onScroll);
+  onScroll();
+</script>
+</body>
+</html>
