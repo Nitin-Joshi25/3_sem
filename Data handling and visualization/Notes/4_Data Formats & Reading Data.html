@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Data Formats — Module 4</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+<style>
+  :root{
+    --ink:#14181F;
+    --paper:#F4F6F5;
+    --panel:#FFFFFF;
+    --line:#DCE3E1;
+    --teal:#0E7C86;
+    --teal-soft:#E4F1F1;
+    --amber:#D98E31;
+    --amber-soft:#FBEEDD;
+    --violet:#6E5A9E;
+    --violet-soft:#EDE9F5;
+    --coral:#C0524A;
+    --coral-soft:#F7E7E5;
+    --green:#3E8E5A;
+    --green-soft:#E6F1EA;
+    --slate:#5B6570;
+    --radius-sm:4px;
+    --radius-md:8px;
+    --maxw:920px;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:'IBM Plex Sans',sans-serif;font-size:16px;line-height:1.65;-webkit-font-smoothing:antialiased;}
+  h1,h2,h3,h4{font-family:'Space Grotesk',sans-serif;color:var(--ink);line-height:1.2;margin:0 0 .5em 0;}
+  code,.mono{font-family:'IBM Plex Mono',monospace;}
+  p{max-width:72ch;}
+  a{color:var(--teal);}
+
+  .shell{display:grid;grid-template-columns:240px minmax(0,1fr);max-width:1240px;margin:0 auto;}
+  @media (max-width:880px){.shell{grid-template-columns:1fr;} .toc{display:none;}}
+
+  .topbar{background:var(--ink);color:#EDEFEC;padding:14px 32px;display:flex;align-items:center;justify-content:space-between;font-family:'IBM Plex Mono',monospace;font-size:12.5px;letter-spacing:.02em;}
+  .topbar .mark{display:flex;align-items:center;gap:10px;color:#EDEFEC;}
+  .topbar .path{color:#8B9490;}
+  .topbar .path b{color:#EDEFEC;font-weight:500;}
+
+  .toc{padding:40px 20px 40px 32px;position:sticky;top:0;align-self:start;height:100vh;overflow-y:auto;}
+  .toc .toc-label{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--slate);margin-bottom:14px;}
+  .toc ol{list-style:none;margin:0;padding:0;border-left:1px solid var(--line);}
+  .toc a{display:block;text-decoration:none;color:var(--slate);font-size:13.5px;padding:7px 0 7px 16px;margin-left:-1px;border-left:2px solid transparent;transition:color .15s ease,border-color .15s ease;}
+  .toc a:hover{color:var(--ink);}
+  .toc a.active{color:var(--ink);border-left:2px solid var(--teal);font-weight:500;}
+
+  main{padding:0 32px 100px;}
+  .content-inner{max-width:var(--maxw);}
+
+  .hero{padding:64px 0 40px;border-bottom:1px solid var(--line);margin-bottom:56px;}
+  .hero .eyebrow{font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:var(--teal);margin-bottom:16px;}
+  .hero h1{font-size:clamp(30px,4vw,44px);max-width:14ch;letter-spacing:-.01em;}
+  .hero .sub{color:var(--slate);max-width:56ch;font-size:16.5px;margin-top:14px;}
+
+  /* format overview table */
+  .data-table-wrap{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius-md);overflow:hidden;margin:30px 0 0;}
+  table.data-table{width:100%;border-collapse:collapse;font-size:14px;}
+  table.data-table th{
+    background:var(--teal-soft);color:var(--teal);text-align:left;
+    font-family:'IBM Plex Mono',monospace;font-size:11.5px;text-transform:uppercase;letter-spacing:.04em;
+    padding:10px 16px;font-weight:600;
+  }
+  table.data-table td{padding:11px 16px;border-top:1px solid var(--line);}
+  table.data-table td:first-child{font-family:'IBM Plex Mono',monospace;font-weight:600;color:var(--ink);}
+  table.data-table tr:hover td{background:var(--paper);}
+
+  section.block{margin-bottom:72px;}
+  .sec-num{font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:var(--teal);margin-bottom:6px;}
+  section.block h2{font-size:26px;margin-bottom:14px;}
+  section.block > p.lead{color:var(--ink);font-size:16.5px;}
+
+  /* csv sample */
+  .csv-sample{
+    font-family:'IBM Plex Mono',monospace;font-size:13px;background:var(--panel);
+    border:1px solid var(--line);border-radius:var(--radius-md);padding:16px 18px;margin:20px 0;
+    overflow-x:auto;white-space:pre;line-height:1.9;
+  }
+  .csv-sample .hdr{color:var(--teal);font-weight:600;}
+
+  /* code panel (shared) */
+  .code-panel{background:#1B2027;border-radius:var(--radius-md);overflow:hidden;margin:22px 0;border:1px solid #2B323C;}
+  .code-panel .cp-bar{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:#20262E;border-bottom:1px solid #2B323C;}
+  .cp-bar .cp-file{font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:#B8C0C7;}
+  .cp-bar .cp-dots{display:flex;gap:6px;}
+  .cp-bar .cp-dots span{width:9px;height:9px;border-radius:50%;background:#3A4149;}
+  .copy-btn{font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:#B8C0C7;background:#2B323C;border:none;border-radius:4px;padding:5px 10px;cursor:pointer;}
+  .copy-btn:hover{background:#37404B;}
+  .code-panel pre{margin:0;padding:20px 22px;overflow-x:auto;font-size:13.5px;}
+  .code-panel code.hljs{background:transparent;padding:0;}
+  .code-output{border-top:1px solid #2B323C;background:#161A20;padding:16px 22px;font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:#8FBF9F;white-space:pre;overflow-x:auto;}
+  .code-output .oh{color:#6C7783;}
+
+  /* format tag */
+  .fmt-tag{
+    display:inline-flex;align-items:center;gap:8px;font-family:'IBM Plex Mono',monospace;font-size:12px;
+    background:var(--teal-soft);color:var(--teal);padding:5px 12px;border-radius:20px;font-weight:600;margin-bottom:14px;
+  }
+
+  /* row vs column diagram */
+  .storage-wrap{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius-md);padding:26px 24px;margin:26px 0;}
+  .storage-grid{display:grid;grid-template-columns:1fr 1fr;gap:26px;}
+  @media (max-width:700px){.storage-grid{grid-template-columns:1fr;}}
+  .storage-col h4{font-size:13px;font-family:'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:.04em;color:var(--slate);margin-bottom:14px;font-weight:500;}
+  .mini-table{border-collapse:collapse;width:100%;font-family:'IBM Plex Mono',monospace;font-size:12.5px;margin-bottom:16px;}
+  .mini-table td{border:1px solid var(--line);padding:6px 10px;text-align:center;}
+  .mini-table td.h{background:#EEF1F0;font-weight:600;}
+  .storage-col.row .mini-table tr:nth-child(2) td{background:var(--amber-soft);}
+  .storage-col.row .mini-table tr:nth-child(3) td{background:#FFF6EA;}
+  .storage-col.row .mini-table tr:nth-child(4) td{background:var(--amber-soft);}
+  .storage-col.col .mini-table td:nth-child(1){background:var(--teal-soft);}
+  .storage-col.col .mini-table td:nth-child(2){background:#EAF6F6;}
+  .storage-col.col .mini-table td:nth-child(3){background:var(--teal-soft);}
+  .storage-col.col .mini-table td:nth-child(4){background:#EAF6F6;}
+  .storage-note{font-size:13px;color:var(--slate);}
+  .storage-col.row .storage-note b{color:var(--amber);}
+  .storage-col.col .storage-note b{color:var(--teal);}
+
+  .other-formats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:24px 0;}
+  @media (max-width:700px){.other-formats{grid-template-columns:repeat(2,1fr);}}
+  .of-card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius-md);padding:14px 16px;}
+  .of-card .of-ext{font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:13.5px;color:var(--ink);}
+  .of-card .of-use{font-size:12px;color:var(--slate);margin-top:4px;}
+
+  .outcome{background:var(--ink);color:#EDEFEC;border-radius:var(--radius-md);padding:32px 28px;margin-top:8px;}
+  .outcome .oc-label{font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:#8FBF9F;margin-bottom:14px;text-transform:uppercase;letter-spacing:.05em;}
+  .outcome p.oc-note{color:#9AA3AC;font-size:14px;margin-top:0;max-width:64ch;}
+  .outcome .oc-tri{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;}
+  .outcome .oc-tri span{background:#1F252D;border:1px solid #333B44;padding:6px 14px;border-radius:20px;font-family:'IBM Plex Mono',monospace;font-size:12.5px;}
+
+  footer{text-align:center;padding:36px 0 60px;color:var(--slate);font-size:12.5px;font-family:'IBM Plex Mono',monospace;}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="mark">
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="9" width="3" height="6" fill="#0E7C86"/><rect x="6.5" y="5" width="3" height="10" fill="#D98E31"/><rect x="12" y="1" width="3" height="14" fill="#6E5A9E"/></svg>
+    DATA&nbsp;HANDLING&nbsp;·&nbsp;MODULE&nbsp;04
+  </div>
+  <div class="path">course<span>/</span><b>data-formats</b><span>/</span>section-4</div>
+</div>
+
+<div class="shell">
+
+  <nav class="toc" id="toc">
+    <div class="toc-label">ON THIS PAGE</div>
+    <ol>
+      <li><a href="#overview" class="tocLink">Format overview</a></li>
+      <li><a href="#s41" class="tocLink">4.1 CSV</a></li>
+      <li><a href="#s42" class="tocLink">4.2 Excel</a></li>
+      <li><a href="#s43" class="tocLink">4.3 JSON</a></li>
+      <li><a href="#s44" class="tocLink">4.4 Parquet</a></li>
+      <li><a href="#others" class="tocLink">Other formats</a></li>
+      <li><a href="#outcome" class="tocLink">Takeaway</a></li>
+    </ol>
+  </nav>
+
+  <main>
+    <div class="content-inner">
+
+      <div class="hero">
+        <div class="eyebrow">CHAPTER 04</div>
+        <h1>Data Formats</h1>
+        <p class="sub">The same table can be stored a dozen different ways. Knowing which format fits which situation — and how to read each one with pandas — is a daily skill in industry.</p>
+
+        <div class="data-table-wrap" id="overview">
+          <table class="data-table">
+            <thead><tr><th>Format</th><th>Common usage</th></tr></thead>
+            <tbody>
+              <tr><td>CSV</td><td>Simple tabular data</td></tr>
+              <tr><td>Excel</td><td>Business reporting</td></tr>
+              <tr><td>JSON</td><td>APIs / web applications</td></tr>
+              <tr><td>XML</td><td>Legacy / integration systems</td></tr>
+              <tr><td>Parquet</td><td>Analytics / data engineering</td></tr>
+              <tr><td>SQL</td><td>Databases</td></tr>
+              <tr><td>TXT</td><td>Logs / text</td></tr>
+              <tr><td>Avro</td><td>Data pipelines</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 4.1 CSV -->
+      <section class="block" id="s41">
+        <div class="sec-num">4.1</div>
+        <h2>CSV</h2>
+        <div class="fmt-tag">Simple tabular data</div>
+        <p class="lead">The plainest way to store a table — one line per row, values separated by commas, and a header row naming the columns.</p>
+
+        <div class="csv-sample"><span class="hdr">id,name,age,salary</span>
+1,Rahul,25,40000
+2,Priya,28,55000
+3,Amit,30,60000</div>
+
+        <div class="code-panel">
+          <div class="cp-bar">
+            <div class="cp-dots"><span></span><span></span><span></span></div>
+            <div class="cp-file">read_csv.py</div>
+            <button class="copy-btn" onclick="copyCode(this,'csv-code')">Copy</button>
+          </div>
+          <pre><code class="language-python" id="csv-code">import pandas as pd
+
+df = pd.read_csv("customers.csv")
+
+print(df)</code></pre>
+        </div>
+      </section>
+
+      <!-- 4.2 Excel -->
+      <section class="block" id="s42">
+        <div class="sec-num">4.2</div>
+        <h2>Excel</h2>
+        <div class="fmt-tag">Business reporting</div>
+        <p class="lead">The default format for anyone working outside engineering teams — finance, sales and operations share data almost exclusively as <span class="mono">.xlsx</span> workbooks.</p>
+
+        <div class="code-panel">
+          <div class="cp-bar">
+            <div class="cp-dots"><span></span><span></span><span></span></div>
+            <div class="cp-file">read_excel.py</div>
+            <button class="copy-btn" onclick="copyCode(this,'xlsx-code')">Copy</button>
+          </div>
+          <pre><code class="language-python" id="xlsx-code">import pandas as pd
+
+df = pd.read_excel("customers.xlsx")
+
+print(df)</code></pre>
+        </div>
+      </section>
+
+      <!-- 4.3 JSON -->
+      <section class="block" id="s43">
+        <div class="sec-num">4.3</div>
+        <h2>JSON</h2>
+        <div class="fmt-tag">APIs / web applications</div>
+        <p class="lead">Almost every API on the internet responds in JSON. For a flat structure, pandas can read it directly.</p>
+
+        <div class="code-panel">
+          <div class="cp-bar">
+            <div class="cp-dots"><span></span><span></span><span></span></div>
+            <div class="cp-file">read_json.py</div>
+            <button class="copy-btn" onclick="copyCode(this,'json-code')">Copy</button>
+          </div>
+          <pre><code class="language-python" id="json-code">import pandas as pd
+
+df = pd.read_json("customers.json")
+
+print(df)</code></pre>
+        </div>
+
+        <p style="font-size:14.5px;">Real-world JSON is rarely flat — records are usually nested one or two levels deep, as seen in Module 3. In that case, <span class="mono">pd.json_normalize()</span> flattens the nested keys into columns.</p>
+
+        <div class="code-panel">
+          <div class="cp-bar">
+            <div class="cp-dots"><span></span><span></span><span></span></div>
+            <div class="cp-file">read_nested_json.py</div>
+            <button class="copy-btn" onclick="copyCode(this,'json-nested-code')">Copy</button>
+          </div>
+          <pre><code class="language-python" id="json-nested-code">import json
+import pandas as pd
+
+with open("customers.json", "r") as file:
+    data = json.load(file)
+
+df = pd.json_normalize(data["customers"])
+
+print(df)</code></pre>
+        </div>
+      </section>
+
+      <!-- 4.4 Parquet -->
+      <section class="block" id="s44">
+        <div class="sec-num">4.4</div>
+        <h2>Parquet</h2>
+        <div class="fmt-tag">Analytics / data engineering</div>
+        <p class="lead">Parquet is especially common in modern analytics and data-engineering environments, because it is <strong>column-oriented</strong> rather than row-oriented — it physically stores data by column, not by row.</p>
+
+        <div class="storage-wrap">
+          <div class="storage-grid">
+            <div class="storage-col row">
+              <h4>Row-oriented (CSV)</h4>
+              <table class="mini-table">
+                <tr><td class="h">id</td><td class="h">name</td><td class="h">age</td><td class="h">salary</td></tr>
+                <tr><td>1</td><td>Rahul</td><td>25</td><td>40000</td></tr>
+                <tr><td>2</td><td>Priya</td><td>28</td><td>55000</td></tr>
+                <tr><td>3</td><td>Amit</td><td>30</td><td>60000</td></tr>
+              </table>
+              <p class="storage-note">Stored one full <b>row</b> at a time. Fast for reading one record end-to-end, but reading only "salary" for every row still means scanning every column.</p>
+            </div>
+            <div class="storage-col col">
+              <h4>Column-oriented (Parquet)</h4>
+              <table class="mini-table">
+                <tr><td class="h">id</td><td class="h">name</td><td class="h">age</td><td class="h">salary</td></tr>
+                <tr><td>1</td><td>Rahul</td><td>25</td><td>40000</td></tr>
+                <tr><td>2</td><td>Priya</td><td>28</td><td>55000</td></tr>
+                <tr><td>3</td><td>Amit</td><td>30</td><td>60000</td></tr>
+              </table>
+              <p class="storage-note">Stored one full <b>column</b> at a time. An analytics query like "average salary" reads only the salary column, skipping everything else — much faster at scale.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="code-panel">
+          <div class="cp-bar">
+            <div class="cp-dots"><span></span><span></span><span></span></div>
+            <div class="cp-file">parquet_demo.py</div>
+            <button class="copy-btn" onclick="copyCode(this,'parquet-code')">Copy</button>
+          </div>
+          <pre><code class="language-python" id="parquet-code">df.to_parquet("customers.parquet")
+
+new_df = pd.read_parquet("customers.parquet")
+
+print(new_df)</code></pre>
+        </div>
+      </section>
+
+      <!-- Other formats -->
+      <section class="block" id="others">
+        <div class="sec-num">REFERENCE</div>
+        <h2>Other formats you'll encounter</h2>
+        <p class="lead">Not every format needs a dedicated code walkthrough, but every trainee should recognise these on sight.</p>
+        <div class="other-formats">
+          <div class="of-card"><div class="of-ext">XML</div><div class="of-use">Legacy / integration systems</div></div>
+          <div class="of-card"><div class="of-ext">SQL</div><div class="of-use">Databases</div></div>
+          <div class="of-card"><div class="of-ext">TXT</div><div class="of-use">Logs / text</div></div>
+          <div class="of-card"><div class="of-ext">Avro</div><div class="of-use">Data pipelines</div></div>
+        </div>
+      </section>
+
+      <!-- Outcome -->
+      <section class="block" id="outcome" style="margin-bottom:24px;">
+        <div class="sec-num">TAKEAWAY</div>
+        <h2>One library, most formats</h2>
+        <div class="outcome">
+          <p class="oc-note">Pandas currently supports reading and writing several common data sources and formats, including CSV, Excel, SQL, JSON and Parquet — the format changes, but the pattern (<span class="mono" style="color:#EDEFEC;">read_&lt;format&gt;</span> in, <span class="mono" style="color:#EDEFEC;">to_&lt;format&gt;</span> out) stays the same.</p>
+          <div class="oc-tri">
+            <span>pd.read_csv / df.to_csv</span>
+            <span>pd.read_excel / df.to_excel</span>
+            <span>pd.read_json / df.to_json</span>
+            <span>pd.read_parquet / df.to_parquet</span>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<footer>MODULE 04 — DATA FORMATS</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/python.min.js"></script>
+<script>
+  if (window.hljs) { hljs.highlightAll(); }
+
+  function copyCode(btn, id){
+    const code = document.getElementById(id).innerText;
+    navigator.clipboard.writeText(code).then(()=>{
+      const old = btn.textContent;
+      btn.textContent = 'Copied';
+      setTimeout(()=>btn.textContent = old, 1400);
+    });
+  }
+
+  const links = document.querySelectorAll('.tocLink');
+  const sections = Array.from(links).map(l => document.querySelector(l.getAttribute('href')));
+  function onScroll(){
+    let current = sections[0];
+    const y = window.scrollY + 120;
+    sections.forEach(sec => { if (sec && sec.offsetTop <= y) current = sec; });
+    links.forEach(l => l.classList.toggle('active', l.getAttribute('href') === '#' + current.id));
+  }
+  window.addEventListener('scroll', onScroll);
+  onScroll();
+</script>
+</body>
+</html>
