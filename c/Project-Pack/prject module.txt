@@ -1,0 +1,238 @@
+Module 1: Data Collection & Preprocessing
+Objective: Get a clean, analysis-ready dataset.
+Dataset: Chicago Crime Dataset from Kaggle (recommended — well-structured, free, large enough)
+Tasks:
+
+Load raw CSV using Pandas
+Drop rows with null Latitude / Longitude
+Parse datetime column into: Hour, Day, Month, Year, Is_Weekend, Season
+Standardize Crime Type labels (theft, THEFT → THEFT)
+Remove duplicate records
+Save output as crime_data_clean.csv
+
+Files: src/preprocessing.py, data/crime_data_clean.csv
+
+Module 2: Exploratory Data Analysis
+Objective: Understand crime patterns visually before any modeling.
+Analysis & Visualizations:
+
+Crime Distribution — Bar chart of top 10 crime types
+Yearly Trend — Line chart of crime count per year
+Hourly Pattern — Bar chart showing peak crime hours
+Day vs. Hour Heatmap — Grid showing when crimes peak during the week
+Top Locations — Bar chart of 10 most crime-prone districts/areas
+
+Tools: Pandas, Matplotlib, Seaborn
+Files: notebooks/eda.ipynb
+
+Module 3: Geospatial Analysis & Hotspot Detection
+Objective: Detect and visualize where crimes cluster geographically.
+Tasks:
+
+Plot all crime points on an interactive city map using Folium
+Add a heatmap layer (folium.plugins.HeatMap) showing crime density
+Run DBSCAN clustering on Latitude/Longitude coordinates
+eps = 0.01 (~1 km radius), min_samples = 50
+
+
+Mark each detected cluster on the map with:
+Area name
+Crime count
+Dominant crime type (e.g., Theft, Assault)
+
+
+Export map as hotspot_map.html
+
+Tools: Folium, Scikit-learn (DBSCAN)
+Files: notebooks/hotspot_detection.ipynb, src/visualization.py
+
+Module 4: Feature Engineering
+Objective: Build ML-ready features from the cleaned dataset.
+Features to create:
+
+
+
+Feature
+How
+
+
+
+Hour, Day, Month
+Extracted from datetime
+
+
+Is_Weekend
+1 if Saturday or Sunday
+
+
+Season
+0=Winter, 1=Spring, 2=Summer, 3=Fall
+
+
+Crime_Density
+Crime count per area in last 30 days
+
+
+Risk_Label
+Low / Medium / High based on density percentile
+
+
+
+Label encode categorical columns (Crime_Type, Location_Type)
+Create Risk_Label target by binning Crime_Density into 3 percentile groups
+Save output as data/features.csv
+
+Files: src/features.py
+
+Module 5: Machine Learning — Crime Risk Classification
+Objective: Predict crime risk level (Low / Medium / High) for a given location and time.
+Input Features: Hour, Day, Month, Is_Weekend, Season, Latitude, Longitude, Crime_Density
+Target: Risk_Label
+Models to train and compare:
+
+
+
+Model
+Role
+
+
+
+Logistic Regression
+Baseline
+
+
+Random Forest
+Main model
+
+
+XGBoost
+Comparison
+
+
+Evaluation Metrics: Accuracy, Precision, Recall, F1 Score, Confusion Matrix
+
+Save best model as models/risk_model.pkl using joblib
+
+Files: notebooks/model_training.ipynb, src/prediction.py, models/risk_model.pkl
+
+Module 6: Explainable AI (SHAP)
+Objective: Explain why the model predicts a certain risk level.
+Tasks:
+
+Load trained Random Forest model
+Compute SHAP values on test samples
+Generate:
+SHAP Summary Plot — overall feature importance across all predictions
+SHAP Force Plot — explain one individual prediction in detail
+
+
+Save plots as images for use in the dashboard
+
+Example output:
+
+
+
+Risk Prediction: HIGH
+Top Reasons:
+  + Crime Density     → 45%
+  + Night Hour        → 25%
+  + Weekend           → 15%
+  + Location Type     → 10%
+
+Tools: shap
+Files: notebooks/model_training.ipynb (SHAP section), src/prediction.py
+
+Module 7: Streamlit Dashboard
+Objective: A clean, interactive 4-page dashboard to present all results.
+Page 1 — Crime Overview
+
+KPI cards: Total Crimes, Most Common Crime, Peak Hour, Highest Risk Area
+
+Page 2 — Crime Map
+
+Embedded Folium heatmap with hotspot cluster markers
+Sidebar filters: Crime Type, Year
+
+Page 3 — Crime Analysis
+
+Crime type bar chart
+Monthly trend line chart
+Hourly pattern bar chart
+Day vs. Hour heatmap
+
+Page 4 — Risk Prediction
+
+User inputs: Location (dropdown), Hour, Day, Month
+Output: Risk Level (Low / Medium / High) + probability score
+SHAP explanation shown for that specific prediction
+
+Tools: Streamlit, streamlit-folium, Plotly
+Files: dashboard/app.py
+
+Final Project Structure
+
+
+
+CrimePulse/
+├── data/
+│   ├── crime_data.csv
+│   ├── crime_data_clean.csv
+│   └── features.csv
+├── notebooks/
+│   ├── eda.ipynb
+│   ├── hotspot_detection.ipynb
+│   └── model_training.ipynb
+├── models/
+│   └── risk_model.pkl
+├── src/
+│   ├── preprocessing.py
+│   ├── features.py
+│   ├── prediction.py
+│   └── visualization.py
+├── dashboard/
+│   └── app.py
+├── requirements.txt
+└── README.md
+
+
+Technology Stack
+
+
+
+Purpose
+Tool
+
+
+
+Data Processing
+Pandas, NumPy
+
+
+Visualization
+Matplotlib, Seaborn, Plotly
+
+
+Maps
+Folium
+
+
+Clustering
+Scikit-learn (DBSCAN)
+
+
+ML Models
+Scikit-learn, XGBoost
+
+
+Explainability
+SHAP
+
+
+Dashboard
+Streamlit
+
+
+Model Saving
+Joblib
+
+
