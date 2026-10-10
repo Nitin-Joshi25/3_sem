@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Handling Missing Values — Module 7</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+<style>
+  :root{
+    --ink:#14181F;
+    --paper:#F4F6F5;
+    --panel:#FFFFFF;
+    --line:#DCE3E1;
+    --teal:#0E7C86;
+    --teal-soft:#E4F1F1;
+    --amber:#D98E31;
+    --amber-soft:#FBEEDD;
+    --violet:#6E5A9E;
+    --violet-soft:#EDE9F5;
+    --coral:#C0524A;
+    --coral-soft:#F7E7E5;
+    --green:#3E8E5A;
+    --green-soft:#E6F1EA;
+    --slate:#5B6570;
+    --radius-sm:4px;
+    --radius-md:8px;
+    --maxw:920px;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:'IBM Plex Sans',sans-serif;font-size:16px;line-height:1.65;-webkit-font-smoothing:antialiased;}
+  h1,h2,h3,h4{font-family:'Space Grotesk',sans-serif;color:var(--ink);line-height:1.2;margin:0 0 .5em 0;}
+  code,.mono{font-family:'IBM Plex Mono',monospace;}
+  p{max-width:72ch;}
+  a{color:var(--teal);}
+
+  .shell{display:grid;grid-template-columns:240px minmax(0,1fr);max-width:1240px;margin:0 auto;}
+  @media (max-width:880px){.shell{grid-template-columns:1fr;} .toc{display:none;}}
+
+  .topbar{background:var(--ink);color:#EDEFEC;padding:14px 32px;display:flex;align-items:center;justify-content:space-between;font-family:'IBM Plex Mono',monospace;font-size:12.5px;letter-spacing:.02em;}
+  .topbar .mark{display:flex;align-items:center;gap:10px;color:#EDEFEC;}
+  .topbar .path{color:#8B9490;}
+  .topbar .path b{color:#EDEFEC;font-weight:500;}
+
+  .toc{padding:40px 20px 40px 32px;position:sticky;top:0;align-self:start;height:100vh;overflow-y:auto;}
+  .toc .toc-label{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--slate);margin-bottom:14px;}
+  .toc ol{list-style:none;margin:0;padding:0;border-left:1px solid var(--line);}
+  .toc a{display:block;text-decoration:none;color:var(--slate);font-size:13.5px;padding:7px 0 7px 16px;margin-left:-1px;border-left:2px solid transparent;transition:color .15s ease,border-color .15s ease;}
+  .toc a:hover{color:var(--ink);}
+  .toc a.active{color:var(--ink);border-left:2px solid var(--teal);font-weight:500;}
+
+  main{padding:0 32px 100px;}
+  .content-inner{max-width:var(--maxw);}
+
+  .hero{padding:64px 0 40px;border-bottom:1px solid var(--line);margin-bottom:56px;}
+  .hero .eyebrow{font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:var(--teal);margin-bottom:16px;}
+  .hero h1{font-size:clamp(28px,4vw,42px);max-width:16ch;letter-spacing:-.01em;}
+  .hero .sub{color:var(--slate);max-width:58ch;font-size:16.5px;margin-top:14px;}
+  .hero .toolset{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px;}
+  .hero .toolset span{font-family:'IBM Plex Mono',monospace;font-size:12.5px;background:var(--panel);border:1px solid var(--line);padding:5px 12px;border-radius:20px;}
+
+  section.block{margin-bottom:72px;}
+  .sec-num{font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:var(--teal);margin-bottom:6px;}
+  section.block h2{font-size:26px;margin-bottom:14px;}
+  section.block > p.lead{color:var(--ink);font-size:16.5px;}
+
+  /* sample table */
+  .data-table-wrap{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius-md);overflow:hidden;margin:22px 0;}
+  table.data-table{width:100%;border-collapse:collapse;font-size:14px;font-family:'IBM Plex Mono',monospace;}
+  table.data-table th{background:#EEF1F0;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--slate);padding:9px 16px;font-weight:600;}
+  table.data-table td{padding:9px 16px;border-top:1px solid var(--line);}
+  table.data-table td.nan{background:var(--coral-soft);color:var(--coral);font-weight:600;}
+
+  /* code panel (shared) */
+  .code-panel{background:#1B2027;border-radius:var(--radius-md);overflow:hidden;margin:22px 0;border:1px solid #2B323C;}
+  .code-panel .cp-bar{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:#20262E;border-bottom:1px solid #2B323C;}
+  .cp-bar .cp-file{font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:#B8C0C7;}
+  .cp-bar .cp-dots{display:flex;gap:6px;}
+  .cp-bar .cp-dots span{width:9px;height:9px;border-radius:50%;background:#3A4149;}
+  .copy-btn{font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:#B8C0C7;background:#2B323C;border:none;border-radius:4px;padding:5px 10px;cursor:pointer;}
+  .copy-btn:hover{background:#37404B;}
+  .code-panel pre{margin:0;padding:20px 22px;overflow-x:auto;font-size:13.5px;}
+  .code-panel code.hljs{background:transparent;padding:0;}
+  .code-output{border-top:1px solid #2B323C;background:#161A20;padding:16px 22px;font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:#8FBF9F;white-space:pre;overflow-x:auto;}
+  .code-output .oh{color:#6C7783;}
+
+  /* percentage bars */
+  .pct-wrap{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius-md);padding:20px;margin:22px 0;}
+  .pct-row{display:grid;grid-template-columns:90px 1fr 50px;align-items:center;gap:10px;padding:7px 0;}
+  .pct-row .pct-label{font-family:'IBM Plex Mono',monospace;font-size:13px;}
+  .pct-row .pct-track{height:10px;background:var(--paper);border-radius:6px;overflow:hidden;}
+  .pct-row .pct-fill{height:100%;background:var(--coral);border-radius:6px;}
+  .pct-row .pct-val{font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:var(--slate);text-align:right;}
+
+  /* strategy grid */
+  .strategy-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:26px 0;}
+  @media (max-width:700px){.strategy-grid{grid-template-columns:1fr;}}
+  .strat-card{border:1px solid var(--line);border-radius:var(--radius-md);background:var(--panel);overflow:hidden;}
+  .strat-card .sc-head{padding:12px 16px;display:flex;align-items:center;justify-content:space-between;}
+  .strat-card .sc-head h4{margin:0;font-size:14.5px;font-family:'Space Grotesk',sans-serif;}
+  .strat-card .sc-tag{font-family:'IBM Plex Mono',monospace;font-size:10px;padding:3px 8px;border-radius:20px;text-transform:uppercase;letter-spacing:.04em;font-weight:500;}
+  .strat-card .sc-body{padding:0 16px 16px;}
+  .strat-card .sc-body p{font-size:13px;color:var(--slate);margin:0 0 10px;max-width:none;}
+  .strat-card code.sc-code{display:block;font-family:'IBM Plex Mono',monospace;font-size:12px;background:var(--paper);padding:8px 10px;border-radius:var(--radius-sm);}
+  .strat-card.drop .sc-head{background:var(--coral-soft);}
+  .strat-card.drop .sc-tag{background:var(--coral);color:#fff;}
+  .strat-card.mean .sc-head{background:var(--teal-soft);}
+  .strat-card.mean .sc-tag{background:var(--teal);color:#fff;}
+  .strat-card.median .sc-head{background:var(--teal-soft);}
+  .strat-card.median .sc-tag{background:var(--teal);color:#fff;}
+  .strat-card.mode .sc-head{background:var(--amber-soft);}
+  .strat-card.mode .sc-tag{background:var(--amber);color:#fff;}
+  .strat-card.ffill .sc-head{background:var(--violet-soft);}
+  .strat-card.ffill .sc-tag{background:var(--violet);color:#fff;}
+  .strat-card.bfill .sc-head{background:var(--violet-soft);}
+  .strat-card.bfill .sc-tag{background:var(--violet);color:#fff;}
+
+  /* ffill/bfill mini sequence */
+  .seq-wrap{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;}
+  .seq-cell{font-family:'IBM Plex Mono',monospace;font-size:12px;border:1px solid var(--line);border-radius:4px;padding:5px 10px;background:var(--paper);}
+  .seq-cell.filled{background:var(--violet-soft);color:var(--violet);font-weight:600;border-color:var(--violet);}
+  .seq-cell.nan{color:var(--coral);}
+
+  /* final table */
+  .clean-wrap{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius-md);padding:22px;margin:22px 0;overflow-x:auto;}
+  table.clean-table{border-collapse:collapse;font-family:'IBM Plex Mono',monospace;font-size:13px;width:100%;min-width:480px;}
+  table.clean-table th{background:var(--green-soft);color:var(--green);text-align:left;padding:9px 14px;font-size:11px;text-transform:uppercase;letter-spacing:.04em;font-weight:600;}
+  table.clean-table td{padding:9px 14px;border-top:1px solid var(--line);}
+  table.clean-table td.filled{color:var(--teal);font-weight:600;}
+
+  /* decision paths */
+  .decision-wrap{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin:26px 0;}
+  @media (max-width:700px){.decision-wrap{grid-template-columns:1fr;}}
+  .decision-col{border-radius:var(--radius-md);padding:20px;}
+  .decision-col.right{background:var(--green-soft);border:1px solid var(--green);}
+  .decision-col.wrong{background:var(--coral-soft);border:1px solid var(--coral);}
+  .decision-col h4{font-size:13px;font-family:'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:.04em;margin-bottom:14px;}
+  .decision-col.right h4{color:var(--green);}
+  .decision-col.wrong h4{color:var(--coral);}
+  .decision-chain{display:flex;flex-direction:column;gap:0;align-items:flex-start;}
+  .decision-step{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:8px 16px;font-size:13.5px;font-weight:500;}
+  .decision-arrow-v{padding:4px 0 4px 16px;color:var(--slate);}
+
+  .why-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:22px 0;}
+  @media (max-width:640px){.why-grid{grid-template-columns:1fr;}}
+  .why-card{border-radius:var(--radius-md);padding:18px;border:1px solid var(--line);background:var(--panel);}
+  .why-card .wc-tag{font-family:'IBM Plex Mono',monospace;font-size:11px;padding:3px 10px;border-radius:20px;font-weight:600;display:inline-block;margin-bottom:10px;}
+  .why-card.ok .wc-tag{background:var(--green-soft);color:var(--green);}
+  .why-card.bad .wc-tag{background:var(--coral-soft);color:var(--coral);}
+  .why-card p{font-size:13.5px;margin:0;color:var(--slate);}
+  .why-card .wc-field{font-family:'IBM Plex Mono',monospace;font-size:14px;color:var(--ink);margin-bottom:8px;}
+
+  .outcome{background:var(--ink);color:#EDEFEC;border-radius:var(--radius-md);padding:32px 28px;margin-top:8px;}
+  .outcome .oc-label{font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:#8FBF9F;margin-bottom:14px;text-transform:uppercase;letter-spacing:.05em;}
+  .outcome p.oc-note{color:#EDEFEC;font-size:17px;margin:0;max-width:64ch;font-family:'Space Grotesk',sans-serif;line-height:1.4;}
+
+  footer{text-align:center;padding:36px 0 60px;color:var(--slate);font-size:12.5px;font-family:'IBM Plex Mono',monospace;}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="mark">
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="9" width="3" height="6" fill="#0E7C86"/><rect x="6.5" y="5" width="3" height="10" fill="#D98E31"/><rect x="12" y="1" width="3" height="14" fill="#6E5A9E"/></svg>
+    DATA&nbsp;HANDLING&nbsp;·&nbsp;MODULE&nbsp;07
+  </div>
+  <div class="path">course<span>/</span><b>missing-values</b><span>/</span>section-7</div>
+</div>
+
+<div class="shell">
+
+  <nav class="toc" id="toc">
+    <div class="toc-label">ON THIS PAGE</div>
+    <ol>
+      <li><a href="#s71" class="tocLink">7.1 What is a missing value?</a></li>
+      <li><a href="#s72" class="tocLink">7.2 Detect missing values</a></li>
+      <li><a href="#strategies" class="tocLink">7.3–7.8 Handling strategies</a></li>
+      <li><a href="#s79" class="tocLink">7.9 Practical example</a></li>
+      <li><a href="#blindly" class="tocLink">Don't blindly fill</a></li>
+    </ol>
+  </nav>
+
+  <main>
+    <div class="content-inner">
+
+      <div class="hero">
+        <div class="eyebrow">CHAPTER 07 · ONE OF THE MOST IMPORTANT TOPICS</div>
+        <h1>Handling Missing Values</h1>
+        <p class="sub">Almost no real dataset arrives complete. What you do about the gaps — and whether you understand <em>why</em> they exist first — shapes every result built on top of it.</p>
+        <div class="toolset">
+          <span>isna()</span><span>fillna()</span><span>dropna()</span><span>ffill()</span><span>bfill()</span><span>interpolate()</span>
+        </div>
+      </div>
+
+      <!-- 7.1 -->
+      <section class="block" id="s71">
+        <div class="sec-num">7.1</div>
+        <h2>What is a missing value?</h2>
+        <p class="lead"><span class="mono">NaN</span> ("Not a Number") marks a cell where no value was recorded — the data point simply doesn't exist yet.</p>
+
+        <div class="data-table-wrap">
+          <table class="data-table">
+            <thead><tr><th>Name</th><th>Age</th><th>Salary</th></tr></thead>
+            <tbody>
+              <tr><td>Rahul</td><td>25</td><td>40000</td></tr>
+              <tr><td>Priya</td><td>28</td><td>50000</td></tr>
+              <tr><td>Amit</td><td class="nan">NaN</td><td>45000</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- 7.2 -->
+      <section class="block" id="s72">
+        <div class="sec-num">7.2</div>
+        <h2>Detect missing values</h2>
+        <p class="lead">Before choosing a strategy, quantify the gap — as a raw count, and as a share of the whole column.</p>
+
+        <div class="code-panel">
+          <div class="cp-bar">
+            <div class="cp-dots"><span></span><span></span><span></span></div>
+            <div class="cp-file">detect.py</div>
+            <button class="copy-btn" onclick="copyCode(this,'detect-code')">Copy</button>
+          </div>
+          <pre><code class="language-python" id="detect-code">print(df.isna())
+print(df.isna().sum())
+
+missing_percentage = df.isna().mean() * 100
+print(missing_percentage)</code></pre>
+        </div>
+
+        <div class="pct-wrap">
+          <div class="pct-row"><span class="pct-label">name</span><div class="pct-track"><div class="pct-fill" style="width:0%;"></div></div><span class="pct-val">0%</span></div>
+          <div class="pct-row"><span class="pct-label">age</span><div class="pct-track"><div class="pct-fill" style="width:50%;"></div></div><span class="pct-val">50%</span></div>
+          <div class="pct-row"><span class="pct-label">salary</span><div class="pct-track"><div class="pct-fill" style="width:25%;"></div></div><span class="pct-val">25%</span></div>
+          <div class="pct-row"><span class="pct-label">city</span><div class="pct-track"><div class="pct-fill" style="width:25%;"></div></div><span class="pct-val">25%</span></div>
+        </div>
+      </section>
+
+      <!-- Strategies -->
+      <section class="block" id="strategies">
+        <div class="sec-num">7.3 – 7.8</div>
+        <h2>Handling strategies</h2>
+        <p class="lead">There is no single correct fix — each strategy trades off differently against how much data you lose and how much you assume.</p>
+
+        <div class="strategy-grid">
+          <div class="strat-card drop">
+            <div class="sc-head"><h4>Drop rows</h4><span class="sc-tag">Removes data</span></div>
+            <div class="sc-body">
+              <code class="sc-code">df_clean = df.dropna()</code>
+              <p style="margin-top:10px;">⚠ If 40% of a column is missing, simply deleting those rows can cause significant information loss. Use only when missing rows are a small, non-informative fraction.</p>
+            </div>
+          </div>
+          <div class="strat-card mean">
+            <div class="sc-head"><h4>Fill with mean</h4><span class="sc-tag">Numerical</span></div>
+            <div class="sc-body">
+              <code class="sc-code">df["age"] = df["age"].fillna(df["age"].mean())</code>
+              <p style="margin-top:10px;">A reasonable default for numerical data with no strong outliers.</p>
+            </div>
+          </div>
+          <div class="strat-card median">
+            <div class="sc-head"><h4>Fill with median</h4><span class="sc-tag">Numerical</span></div>
+            <div class="sc-body">
+              <code class="sc-code">df["age"] = df["age"].fillna(df["age"].median())</code>
+              <p style="margin-top:10px;">Preferable when the data contains strong outliers, since the median is far less affected by extreme values than the mean.</p>
+            </div>
+          </div>
+          <div class="strat-card mode">
+            <div class="sc-head"><h4>Fill with mode</h4><span class="sc-tag">Categorical</span></div>
+            <div class="sc-body">
+              <code class="sc-code">df["city"] = df["city"].fillna(df["city"].mode()[0])</code>
+              <p style="margin-top:10px;">For categorical columns, filling with the single most frequent category.</p>
+            </div>
+          </div>
+          <div class="strat-card ffill">
+            <div class="sc-head"><h4>Forward fill</h4><span class="sc-tag">Sequential</span></div>
+            <div class="sc-body">
+              <code class="sc-code">df["temperature"] = df["temperature"].ffill()</code>
+              <p style="margin-top:10px;">Carries the last known value forward — useful for time-series-like data.</p>
+              <div class="seq-wrap">
+                <div class="seq-cell">31°</div><div class="seq-cell nan">NaN</div><div class="seq-cell nan">NaN</div><div class="seq-cell">34°</div>
+              </div>
+              <div class="seq-wrap">
+                <div class="seq-cell">31°</div><div class="seq-cell filled">31°</div><div class="seq-cell filled">31°</div><div class="seq-cell">34°</div>
+              </div>
+            </div>
+          </div>
+          <div class="strat-card bfill">
+            <div class="sc-head"><h4>Backward fill</h4><span class="sc-tag">Sequential</span></div>
+            <div class="sc-body">
+              <code class="sc-code">df["temperature"] = df["temperature"].bfill()</code>
+              <p style="margin-top:10px;">Carries the next known value backward, filling gaps from the opposite direction.</p>
+              <div class="seq-wrap">
+                <div class="seq-cell">31°</div><div class="seq-cell nan">NaN</div><div class="seq-cell nan">NaN</div><div class="seq-cell">34°</div>
+              </div>
+              <div class="seq-wrap">
+                <div class="seq-cell">31°</div><div class="seq-cell filled">34°</div><div class="seq-cell filled">34°</div><div class="seq-cell">34°</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 7.9 Practical -->
+      <section class="block" id="s79">
+        <div class="sec-num">7.9</div>
+        <h2>Practical example</h2>
+        <p class="lead">Combining median fill for numeric columns with mode fill for a categorical column, on one small dataset.</p>
+
+        <div class="code-panel">
+          <div class="cp-bar">
+            <div class="cp-dots"><span></span><span></span><span></span></div>
+            <div class="cp-file">handle_missing.py</div>
+            <button class="copy-btn" onclick="copyCode(this,'practical-code')">Copy</button>
+          </div>
+          <pre><code class="language-python" id="practical-code">import pandas as pd
+
+data = {
+    "name": ["Rahul", "Priya", "Amit", "Sneha"],
+    "age": [25, None, 30, None],
+    "salary": [40000, 50000, None, 60000],
+    "city": ["Delhi", "Pune", None, "Mumbai"]
+}
+
+df = pd.DataFrame(data)
+
+print("Original:")
+print(df)
+
+# Numerical missing values
+df["age"] = df["age"].fillna(df["age"].median())
+df["salary"] = df["salary"].fillna(df["salary"].median())
+
+# Categorical missing value
+df["city"] = df["city"].fillna(df["city"].mode()[0])
+
+print("\nAfter handling missing values:")
+print(df)</code></pre>
+        </div>
+
+        <div class="data-table-wrap">
+          <table class="data-table">
+            <thead><tr><th>name</th><th>age</th><th>salary</th><th>city</th></tr></thead>
+            <tbody>
+              <tr><td>Rahul</td><td>25</td><td>40000</td><td>Delhi</td></tr>
+              <tr><td>Priya</td><td class="nan">NaN</td><td>50000</td><td>Pune</td></tr>
+              <tr><td>Amit</td><td>30</td><td class="nan">NaN</td><td class="nan">NaN</td></tr>
+              <tr><td>Sneha</td><td class="nan">NaN</td><td>60000</td><td>Mumbai</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p style="font-size:13px;color:var(--slate);text-align:center;">↓ after handling ↓</p>
+        <div class="clean-wrap">
+          <table class="clean-table">
+            <thead><tr><th>name</th><th>age</th><th>salary</th><th>city</th></tr></thead>
+            <tbody>
+              <tr><td>Rahul</td><td>25.0</td><td>40000.0</td><td>Delhi</td></tr>
+              <tr><td>Priya</td><td class="filled">27.5</td><td>50000.0</td><td>Pune</td></tr>
+              <tr><td>Amit</td><td>30.0</td><td class="filled">50000.0</td><td class="filled">Delhi</td></tr>
+              <tr><td>Sneha</td><td class="filled">27.5</td><td>60000.0</td><td>Mumbai</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p style="font-size:13px;color:var(--slate);">Age's median of <span class="mono">[25, 30]</span> is <span class="mono">27.5</span>; salary's median of <span class="mono">[40000, 50000, 60000]</span> is <span class="mono">50000</span>; city's mode picks the most frequent label — here, alphabetically first among equally common values.</p>
+      </section>
+
+      <!-- Don't blindly fill -->
+      <section class="block" id="blindly" style="margin-bottom:24px;">
+        <div class="sec-num">INDUSTRY CONCEPT</div>
+        <h2>Don't blindly fill missing data</h2>
+        <p class="lead">Missing does not always mean "wrong" — and treating every gap the same way is how real data-quality issues get silently buried.</p>
+
+        <div class="why-grid">
+          <div class="why-card ok">
+            <span class="wc-tag">Often fine</span>
+            <div class="wc-field">Middle Name = missing</div>
+            <p>Plenty of people simply don't have a middle name — this could be completely valid, not an error at all.</p>
+          </div>
+          <div class="why-card bad">
+            <span class="wc-tag">Serious issue</span>
+            <div class="wc-field">Customer ID = missing</div>
+            <p>An identifier should never be absent — this is a strong signal of a broken upstream process, not something to paper over.</p>
+          </div>
+        </div>
+
+        <div class="decision-wrap">
+          <div class="decision-col right">
+            <h4>Right approach</h4>
+            <div class="decision-chain">
+              <div class="decision-step">Detect</div>
+              <div class="decision-arrow-v">↓</div>
+              <div class="decision-step">Understand why missing</div>
+              <div class="decision-arrow-v">↓</div>
+              <div class="decision-step">Choose strategy</div>
+            </div>
+          </div>
+          <div class="decision-col wrong">
+            <h4>Common shortcut — avoid</h4>
+            <div class="decision-chain">
+              <div class="decision-step">Missing</div>
+              <div class="decision-arrow-v">↓</div>
+              <div class="decision-step" style="text-decoration:line-through;opacity:.75;">Fill with 0</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="outcome">
+          <div class="oc-label">The core rule</div>
+          <p class="oc-note">Every missing value deserves a reason before it gets a fix. Filling blindly with zero can quietly turn "unknown" into "false", distorting every average, count and model trained on that column afterward.</p>
+        </div>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<footer>MODULE 07 — HANDLING MISSING VALUES</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/python.min.js"></script>
+<script>
+  if (window.hljs) { hljs.highlightAll(); }
+
+  function copyCode(btn, id){
+    const code = document.getElementById(id).innerText;
+    navigator.clipboard.writeText(code).then(()=>{
+      const old = btn.textContent;
+      btn.textContent = 'Copied';
+      setTimeout(()=>btn.textContent = old, 1400);
+    });
+  }
+
+  const links = document.querySelectorAll('.tocLink');
+  const sections = Array.from(links).map(l => document.querySelector(l.getAttribute('href')));
+  function onScroll(){
+    let current = sections[0];
+    const y = window.scrollY + 120;
+    sections.forEach(sec => { if (sec && sec.offsetTop <= y) current = sec; });
+    links.forEach(l => l.classList.toggle('active', l.getAttribute('href') === '#' + current.id));
+  }
+  window.addEventListener('scroll', onScroll);
+  onScroll();
+</script>
+</body>
+</html>

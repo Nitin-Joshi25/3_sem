@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Data Cleaning — Module 6</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+<style>
+  :root{
+    --ink:#14181F;
+    --paper:#F4F6F5;
+    --panel:#FFFFFF;
+    --line:#DCE3E1;
+    --teal:#0E7C86;
+    --teal-soft:#E4F1F1;
+    --amber:#D98E31;
+    --amber-soft:#FBEEDD;
+    --violet:#6E5A9E;
+    --violet-soft:#EDE9F5;
+    --coral:#C0524A;
+    --coral-soft:#F7E7E5;
+    --green:#3E8E5A;
+    --green-soft:#E6F1EA;
+    --slate:#5B6570;
+    --radius-sm:4px;
+    --radius-md:8px;
+    --maxw:920px;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:'IBM Plex Sans',sans-serif;font-size:16px;line-height:1.65;-webkit-font-smoothing:antialiased;}
+  h1,h2,h3,h4{font-family:'Space Grotesk',sans-serif;color:var(--ink);line-height:1.2;margin:0 0 .5em 0;}
+  code,.mono{font-family:'IBM Plex Mono',monospace;}
+  p{max-width:72ch;}
+  a{color:var(--teal);}
+
+  .shell{display:grid;grid-template-columns:240px minmax(0,1fr);max-width:1240px;margin:0 auto;}
+  @media (max-width:880px){.shell{grid-template-columns:1fr;} .toc{display:none;}}
+
+  .topbar{background:var(--ink);color:#EDEFEC;padding:14px 32px;display:flex;align-items:center;justify-content:space-between;font-family:'IBM Plex Mono',monospace;font-size:12.5px;letter-spacing:.02em;}
+  .topbar .mark{display:flex;align-items:center;gap:10px;color:#EDEFEC;}
+  .topbar .path{color:#8B9490;}
+  .topbar .path b{color:#EDEFEC;font-weight:500;}
+
+  .toc{padding:40px 20px 40px 32px;position:sticky;top:0;align-self:start;height:100vh;overflow-y:auto;}
+  .toc .toc-label{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--slate);margin-bottom:14px;}
+  .toc ol{list-style:none;margin:0;padding:0;border-left:1px solid var(--line);}
+  .toc a{display:block;text-decoration:none;color:var(--slate);font-size:13.5px;padding:7px 0 7px 16px;margin-left:-1px;border-left:2px solid transparent;transition:color .15s ease,border-color .15s ease;}
+  .toc a:hover{color:var(--ink);}
+  .toc a.active{color:var(--ink);border-left:2px solid var(--teal);font-weight:500;}
+
+  main{padding:0 32px 100px;}
+  .content-inner{max-width:var(--maxw);}
+
+  .hero{padding:64px 0 40px;border-bottom:1px solid var(--line);margin-bottom:56px;}
+  .hero .eyebrow{font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:var(--teal);margin-bottom:16px;}
+  .hero h1{font-size:clamp(30px,4vw,44px);max-width:12ch;letter-spacing:-.01em;}
+  .hero .sub{color:var(--slate);max-width:58ch;font-size:16.5px;margin-top:14px;}
+
+  /* problem chip grid */
+  .problem-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:30px;}
+  @media (max-width:700px){.problem-grid{grid-template-columns:repeat(2,1fr);}}
+  .problem-chip{
+    background:var(--panel);border:1px solid var(--line);border-radius:var(--radius-md);
+    padding:12px 14px;font-size:13px;font-weight:500;display:flex;align-items:center;gap:8px;
+  }
+  .problem-chip .p-dot{width:7px;height:7px;border-radius:50%;background:var(--coral);flex-shrink:0;}
+
+  section.block{margin-bottom:72px;}
+  .sec-num{font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:var(--teal);margin-bottom:6px;}
+  section.block h2{font-size:26px;margin-bottom:14px;}
+  section.block > p.lead{color:var(--ink);font-size:16.5px;}
+
+  /* code panel (shared) */
+  .code-panel{background:#1B2027;border-radius:var(--radius-md);overflow:hidden;margin:22px 0;border:1px solid #2B323C;}
+  .code-panel .cp-bar{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:#20262E;border-bottom:1px solid #2B323C;}
+  .cp-bar .cp-file{font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:#B8C0C7;}
+  .cp-bar .cp-dots{display:flex;gap:6px;}
+  .cp-bar .cp-dots span{width:9px;height:9px;border-radius:50%;background:#3A4149;}
+  .copy-btn{font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:#B8C0C7;background:#2B323C;border:none;border-radius:4px;padding:5px 10px;cursor:pointer;}
+  .copy-btn:hover{background:#37404B;}
+  .code-panel pre{margin:0;padding:20px 22px;overflow-x:auto;font-size:13.5px;}
+  .code-panel code.hljs{background:transparent;padding:0;}
+  .code-output{border-top:1px solid #2B323C;background:#161A20;padding:16px 22px;font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:#8FBF9F;white-space:pre;overflow-x:auto;}
+  .code-output .oh{color:#6C7783;}
+
+  /* before/after comparison */
+  .compare{display:grid;grid-template-columns:1fr 44px 1fr;gap:0;margin:24px 0;align-items:stretch;}
+  @media (max-width:640px){.compare{grid-template-columns:1fr;} .compare .cmp-arrow{transform:rotate(90deg);margin:8px auto;}}
+  .cmp-panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius-md);padding:18px 20px;}
+  .cmp-panel.before{border-top:3px solid var(--coral);}
+  .cmp-panel.after{border-top:3px solid var(--green);}
+  .cmp-panel .cmp-tag{font-family:'IBM Plex Mono',monospace;font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--slate);margin-bottom:10px;}
+  .cmp-panel.before .cmp-tag{color:var(--coral);}
+  .cmp-panel.after .cmp-tag{color:var(--green);}
+  .cmp-row{display:flex;justify-content:space-between;font-family:'IBM Plex Mono',monospace;font-size:13.5px;padding:5px 0;border-bottom:1px dashed var(--line);}
+  .cmp-row:last-child{border-bottom:none;}
+  .cmp-arrow{display:flex;align-items:center;justify-content:center;color:var(--slate);}
+
+  /* mini table for dup before/after */
+  .mini-annot{border-collapse:collapse;font-family:'IBM Plex Mono',monospace;font-size:12.5px;width:100%;}
+  .mini-annot th{background:#EEF1F0;padding:6px 10px;text-align:left;font-size:10.5px;text-transform:uppercase;color:var(--slate);}
+  .mini-annot td{padding:6px 10px;border-top:1px solid var(--line);}
+  .mini-annot tr.flag td{background:var(--coral-soft);}
+  .mini-annot tr.gone td{background:var(--paper);color:var(--slate);text-decoration:line-through;opacity:.6;}
+
+  /* coerce diagram */
+  .coerce-wrap{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius-md);padding:22px;margin:22px 0;}
+  .coerce-chain{display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
+  .coerce-box{font-family:'IBM Plex Mono',monospace;font-size:13.5px;padding:8px 16px;border-radius:var(--radius-sm);border:1px solid var(--line);background:var(--paper);}
+  .coerce-box.bad{border-color:var(--coral);color:var(--coral);background:var(--coral-soft);}
+  .coerce-box.nan{border-color:var(--slate);color:var(--slate);background:#EEF1F0;font-style:italic;}
+
+  /* steps */
+  .steps{counter-reset:step;margin:26px 0;}
+  .step{display:grid;grid-template-columns:40px 1fr;gap:16px;padding:16px 0;border-bottom:1px solid var(--line);}
+  .step:last-child{border-bottom:none;}
+  .step .step-num{counter-increment:step;font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:15px;color:var(--teal);display:flex;align-items:flex-start;justify-content:center;padding-top:2px;}
+  .step .step-num::before{content:counter(step);}
+  .step h4{font-size:15px;margin-bottom:4px;}
+  .step p{font-size:14px;color:var(--slate);margin:0;}
+  .step code{background:var(--teal-soft);color:var(--teal);padding:1px 6px;border-radius:4px;font-size:13px;}
+
+  /* horizontal pipeline flow */
+  .hflow{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin:24px 0;}
+  .hflow .hf-node{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius-md);padding:12px 18px;font-size:13.5px;font-weight:500;}
+  .hflow .hf-node.done{border-color:var(--teal);background:var(--teal-soft);color:var(--teal);}
+  .hflow .hf-arrow{color:var(--slate);}
+
+  /* final clean table */
+  .clean-wrap{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius-md);padding:22px;margin:22px 0;overflow-x:auto;}
+  table.clean-table{border-collapse:collapse;font-family:'IBM Plex Mono',monospace;font-size:13px;width:100%;min-width:520px;}
+  table.clean-table th{background:var(--green-soft);color:var(--green);text-align:left;padding:9px 14px;font-size:11px;text-transform:uppercase;letter-spacing:.04em;font-weight:600;}
+  table.clean-table td{padding:9px 14px;border-top:1px solid var(--line);}
+
+  .outcome{background:var(--ink);color:#EDEFEC;border-radius:var(--radius-md);padding:32px 28px;margin-top:8px;}
+  .outcome .oc-label{font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:#8FBF9F;margin-bottom:14px;text-transform:uppercase;letter-spacing:.05em;}
+  .outcome p.oc-note{color:#9AA3AC;font-size:14px;margin-top:0;max-width:64ch;}
+
+  footer{text-align:center;padding:36px 0 60px;color:var(--slate);font-size:12.5px;font-family:'IBM Plex Mono',monospace;}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="mark">
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="9" width="3" height="6" fill="#0E7C86"/><rect x="6.5" y="5" width="3" height="10" fill="#D98E31"/><rect x="12" y="1" width="3" height="14" fill="#6E5A9E"/></svg>
+    DATA&nbsp;HANDLING&nbsp;·&nbsp;MODULE&nbsp;06
+  </div>
+  <div class="path">course<span>/</span><b>data-cleaning</b><span>/</span>section-6</div>
+</div>
+
+<div class="shell">
+
+  <nav class="toc" id="toc">
+    <div class="toc-label">ON THIS PAGE</div>
+    <ol>
+      <li><a href="#s61" class="tocLink">6.1 What is data cleaning?</a></li>
+      <li><a href="#s62" class="tocLink">6.2 Remove duplicates</a></li>
+      <li><a href="#s63" class="tocLink">6.3 Clean text</a></li>
+      <li><a href="#s64" class="tocLink">6.4 Convert data types</a></li>
+      <li><a href="#s65" class="tocLink">6.5 Validate data</a></li>
+      <li><a href="#s66" class="tocLink">6.6 Full cleaning example</a></li>
+    </ol>
+  </nav>
+
+  <main>
+    <div class="content-inner">
+
+      <div class="hero">
+        <div class="eyebrow">CHAPTER 06 · FROM DIAGNOSIS TO REPAIR</div>
+        <h1>Data Cleaning</h1>
+        <p class="sub">Module 5 taught you to spot what's wrong. This module fixes it — the same duplicate row, the same missing values, the same "delhi" vs "Delhi" inconsistency, corrected one pandas call at a time.</p>
+      </div>
+
+      <!-- 6.1 -->
+      <section class="block" id="s61">
+        <div class="sec-num">6.1</div>
+        <h2>What is data cleaning?</h2>
+        <p class="lead">Data cleaning means identifying and correcting problems in raw data before it's trusted for analysis or modelling.</p>
+
+        <div class="problem-grid">
+          <div class="problem-chip"><span class="p-dot"></span>Missing values</div>
+          <div class="problem-chip"><span class="p-dot"></span>Duplicate rows</div>
+          <div class="problem-chip"><span class="p-dot"></span>Wrong data types</div>
+          <div class="problem-chip"><span class="p-dot"></span>Incorrect spelling</div>
+          <div class="problem-chip"><span class="p-dot"></span>Invalid values</div>
+          <div class="problem-chip"><span class="p-dot"></span>Inconsistent formats</div>
+          <div class="problem-chip"><span class="p-dot"></span>Outliers</div>
+        </div>
+      </section>
+
+      <!-- 6.2 Remove duplicates -->
+      <section class="block" id="s62">
+        <div class="sec-num">6.2</div>
+        <h2>Remove duplicates</h2>
+        <p class="lead">Ravi's record appears twice with identical values in every column — an exact duplicate that should be collapsed to one row.</p>
+
+        <div class="code-panel">
+          <div class="cp-bar">
+            <div class="cp-dots"><span></span><span></span><span></span></div>
+            <div class="cp-file">dedupe.py</div>
+            <button class="copy-btn" onclick="copyCode(this,'dedupe-code')">Copy</button>
+          </div>
+          <pre><code class="language-python" id="dedupe-code">df = df.drop_duplicates()
+
+print(df)</code></pre>
+        </div>
+        <p style="font-size:14.5px;">Or, to deduplicate based on a single identifying column rather than requiring every column to match:</p>
+        <div class="code-panel">
+          <div class="cp-bar">
+            <div class="cp-dots"><span></span><span></span><span></span></div>
+            <div class="cp-file">dedupe_subset.py</div>
+            <button class="copy-btn" onclick="copyCode(this,'dedupe2-code')">Copy</button>
+          </div>
+          <pre><code class="language-python" id="dedupe2-code">df = df.drop_duplicates(subset=["customer_id"])</code></pre>
+        </div>
+
+        <div class="clean-wrap" style="margin-top:22px;">
+          <table class="mini-annot">
+            <thead><tr><th>customer_id</th><th>name</th><th>age</th><th>salary</th><th>city</th></tr></thead>
+            <tbody>
+              <tr class="flag"><td>5</td><td>Ravi</td><td>29</td><td>60000</td><td>delhi</td></tr>
+              <tr class="gone"><td>5</td><td>Ravi</td><td>29</td><td>60000</td><td>delhi</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p style="font-size:13px;color:var(--slate);">The first occurrence (kept, highlighted) is retained by default; the repeat (struck through) is dropped.</p>
+      </section>
+
+      <!-- 6.3 Clean text -->
+      <section class="block" id="s63">
+        <div class="sec-num">6.3</div>
+        <h2>Clean text</h2>
+        <p class="lead">Our dataset contains <span class="mono">"Delhi"</span> and <span class="mono">"delhi"</span> — two labels that should represent exactly one city. Stripping whitespace and standardising case fixes this in one line.</p>
+
+        <div class="code-panel">
+          <div class="cp-bar">
+            <div class="cp-dots"><span></span><span></span><span></span></div>
+            <div class="cp-file">clean_city.py</div>
+            <button class="copy-btn" onclick="copyCode(this,'city-code')">Copy</button>
+          </div>
+          <pre><code class="language-python" id="city-code">df["city"] = df["city"].str.strip().str.title()
+
+print(df["city"])</code></pre>
+        </div>
+
+        <div class="compare">
+          <div class="cmp-panel before">
+            <div class="cmp-tag">Before</div>
+            <div class="cmp-row"><span>row 1</span><span>Delhi</span></div>
+            <div class="cmp-row"><span>row 2</span><span>Delhi</span></div>
+            <div class="cmp-row"><span>row 3</span><span>Mumbai</span></div>
+            <div class="cmp-row"><span>row 4</span><span>Pune</span></div>
+            <div class="cmp-row"><span>row 5</span><span style="color:var(--coral);font-weight:600;">delhi</span></div>
+          </div>
+          <div class="cmp-arrow">
+            <svg width="28" height="16" viewBox="0 0 28 16" fill="none"><path d="M0 8H26M26 8L19 1M26 8L19 15" stroke="#5B6570" stroke-width="1.6"/></svg>
+          </div>
+          <div class="cmp-panel after">
+            <div class="cmp-tag">After .str.strip().str.title()</div>
+            <div class="cmp-row"><span>row 1</span><span>Delhi</span></div>
+            <div class="cmp-row"><span>row 2</span><span>Delhi</span></div>
+            <div class="cmp-row"><span>row 3</span><span>Mumbai</span></div>
+            <div class="cmp-row"><span>row 4</span><span>Pune</span></div>
+            <div class="cmp-row"><span>row 5</span><span style="color:var(--green);font-weight:600;">Delhi</span></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 6.4 Convert data types -->
+      <section class="block" id="s64">
+        <div class="sec-num">6.4</div>
+        <h2>Convert data types</h2>
+        <p class="lead">Columns that should be numeric sometimes arrive as text, or contain values that simply aren't numbers.</p>
+
+        <div class="code-panel">
+          <div class="cp-bar">
+            <div class="cp-dots"><span></span><span></span><span></span></div>
+            <div class="cp-file">convert_types.py</div>
+            <button class="copy-btn" onclick="copyCode(this,'convert-code')">Copy</button>
+          </div>
+          <pre><code class="language-python" id="convert-code">df["age"] = pd.to_numeric(df["age"], errors="coerce")</code></pre>
+        </div>
+
+        <div class="coerce-wrap">
+          <div class="coerce-chain">
+            <div class="coerce-box bad">"twenty-five"</div>
+            <span style="color:var(--slate);">→</span>
+            <div class="coerce-box nan">NaN</div>
+            <span style="color:var(--slate);margin-left:14px;">while a valid value passes straight through</span>
+          </div>
+          <div class="coerce-chain" style="margin-top:10px;">
+            <div class="coerce-box">"32"</div>
+            <span style="color:var(--slate);">→</span>
+            <div class="coerce-box" style="border-color:var(--green);color:var(--green);background:var(--green-soft);">32.0</div>
+          </div>
+        </div>
+        <p style="font-size:13.5px;color:var(--slate);"><span class="mono">errors="coerce"</span> converts any value that can't be parsed as a number into a missing value, instead of crashing the whole conversion.</p>
+      </section>
+
+      <!-- 6.5 Validate data -->
+      <section class="block" id="s65">
+        <div class="sec-num">6.5</div>
+        <h2>Validate data</h2>
+        <p class="lead">Being the right type isn't enough — a value can still be logically impossible. Age, for example, can never be negative.</p>
+
+        <div class="code-panel">
+          <div class="cp-bar">
+            <div class="cp-dots"><span></span><span></span><span></span></div>
+            <div class="cp-file">validate.py</div>
+            <button class="copy-btn" onclick="copyCode(this,'validate-code')">Copy</button>
+          </div>
+          <pre><code class="language-python" id="validate-code">invalid_age = df[df["age"] < 0]
+
+print(invalid_age)</code></pre>
+        </div>
+        <p style="font-size:14.5px;">Once flagged, invalid records can be filtered out entirely:</p>
+        <div class="code-panel">
+          <div class="cp-bar">
+            <div class="cp-dots"><span></span><span></span><span></span></div>
+            <div class="cp-file">filter_valid.py</div>
+            <button class="copy-btn" onclick="copyCode(this,'filter-code')">Copy</button>
+          </div>
+          <pre><code class="language-python" id="filter-code">df = df[df["age"] >= 0]</code></pre>
+        </div>
+      </section>
+
+      <!-- 6.6 Full cleaning example -->
+      <section class="block" id="s66" style="margin-bottom:24px;">
+        <div class="sec-num">6.6</div>
+        <h2>Full cleaning example</h2>
+        <p class="lead">Put together, every fix from this module runs as one short pipeline over the original imperfect dataset.</p>
+
+        <div class="hflow">
+          <div class="hf-node done">Remove duplicates</div><span class="hf-arrow">→</span>
+          <div class="hf-node done">Clean names</div><span class="hf-arrow">→</span>
+          <div class="hf-node done">Clean city</div><span class="hf-arrow">→</span>
+          <div class="hf-node done">Convert age</div><span class="hf-arrow">→</span>
+          <div class="hf-node done">Convert salary</div>
+        </div>
+
+        <div class="code-panel">
+          <div class="cp-bar">
+            <div class="cp-dots"><span></span><span></span><span></span></div>
+            <div class="cp-file">full_cleaning.py</div>
+            <button class="copy-btn" onclick="copyCode(this,'full-code')">Copy</button>
+          </div>
+          <pre><code class="language-python" id="full-code">import pandas as pd
+
+data = {
+    "customer_id": [1, 2, 3, 4, 5, 5],
+    "name": [" Rahul ", "Priya", "Amit", "Sneha", "Ravi", "Ravi"],
+    "age": [25, 28, None, 32, 29, 29],
+    "salary": [40000, 55000, 45000, None, 60000, 60000],
+    "city": ["Delhi", "Delhi", "Mumbai", "Pune", "delhi", "delhi"]
+}
+
+df = pd.DataFrame(data)
+
+# Remove duplicate records
+df = df.drop_duplicates()
+
+# Clean names
+df["name"] = df["name"].str.strip().str.title()
+
+# Clean city values
+df["city"] = df["city"].str.strip().str.title()
+
+# Convert numerical fields
+df["age"] = pd.to_numeric(df["age"], errors="coerce")
+df["salary"] = pd.to_numeric(df["salary"], errors="coerce")
+
+print(df)</code></pre>
+        </div>
+
+        <div class="clean-wrap">
+          <table class="clean-table">
+            <thead><tr><th>customer_id</th><th>name</th><th>age</th><th>salary</th><th>city</th></tr></thead>
+            <tbody>
+              <tr><td>1</td><td>Rahul</td><td>25.0</td><td>40000.0</td><td>Delhi</td></tr>
+              <tr><td>2</td><td>Priya</td><td>28.0</td><td>55000.0</td><td>Delhi</td></tr>
+              <tr><td>3</td><td>Amit</td><td>NaN</td><td>45000.0</td><td>Mumbai</td></tr>
+              <tr><td>4</td><td>Sneha</td><td>32.0</td><td>NaN</td><td>Pune</td></tr>
+              <tr><td>5</td><td>Ravi</td><td>29.0</td><td>60000.0</td><td>Delhi</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p style="font-size:13px;color:var(--slate);">The duplicate is gone, names and cities are consistently capitalised, and both numeric columns are proper floats. The remaining <span class="mono">NaN</span> values are genuine gaps — that's the subject of the next module.</p>
+
+        <div class="outcome">
+          <div class="oc-label">What changed</div>
+          <p class="oc-note">6 rows → 5 rows (duplicate removed). "delhi" and " Rahul " → "Delhi" and "Rahul" (text standardised). age and salary → proper numeric dtypes, ready for real arithmetic instead of accidental string concatenation.</p>
+        </div>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<footer>MODULE 06 — DATA CLEANING</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/python.min.js"></script>
+<script>
+  if (window.hljs) { hljs.highlightAll(); }
+
+  function copyCode(btn, id){
+    const code = document.getElementById(id).innerText;
+    navigator.clipboard.writeText(code).then(()=>{
+      const old = btn.textContent;
+      btn.textContent = 'Copied';
+      setTimeout(()=>btn.textContent = old, 1400);
+    });
+  }
+
+  const links = document.querySelectorAll('.tocLink');
+  const sections = Array.from(links).map(l => document.querySelector(l.getAttribute('href')));
+  function onScroll(){
+    let current = sections[0];
+    const y = window.scrollY + 120;
+    sections.forEach(sec => { if (sec && sec.offsetTop <= y) current = sec; });
+    links.forEach(l => l.classList.toggle('active', l.getAttribute('href') === '#' + current.id));
+  }
+  window.addEventListener('scroll', onScroll);
+  onScroll();
+</script>
+</body>
+</html>
