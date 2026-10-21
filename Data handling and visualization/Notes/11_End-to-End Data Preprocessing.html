@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Complete Data Preprocessing Pipeline — Module 11</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+<style>
+  :root{
+    --ink:#14181F;
+    --paper:#F4F6F5;
+    --panel:#FFFFFF;
+    --line:#DCE3E1;
+    --teal:#0E7C86;
+    --teal-soft:#E4F1F1;
+    --amber:#D98E31;
+    --amber-soft:#FBEEDD;
+    --violet:#6E5A9E;
+    --violet-soft:#EDE9F5;
+    --coral:#C0524A;
+    --coral-soft:#F7E7E5;
+    --green:#3E8E5A;
+    --green-soft:#E6F1EA;
+    --slate:#5B6570;
+    --radius-sm:4px;
+    --radius-md:8px;
+    --maxw:960px;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:'IBM Plex Sans',sans-serif;font-size:16px;line-height:1.65;-webkit-font-smoothing:antialiased;}
+  h1,h2,h3,h4{font-family:'Space Grotesk',sans-serif;color:var(--ink);line-height:1.2;margin:0 0 .5em 0;}
+  code,.mono{font-family:'IBM Plex Mono',monospace;}
+  p{max-width:72ch;}
+  a{color:var(--teal);}
+
+  .shell{display:grid;grid-template-columns:240px minmax(0,1fr);max-width:1280px;margin:0 auto;}
+  @media (max-width:880px){.shell{grid-template-columns:1fr;} .toc{display:none;}}
+
+  .topbar{background:var(--ink);color:#EDEFEC;padding:14px 32px;display:flex;align-items:center;justify-content:space-between;font-family:'IBM Plex Mono',monospace;font-size:12.5px;letter-spacing:.02em;}
+  .topbar .mark{display:flex;align-items:center;gap:10px;color:#EDEFEC;}
+  .topbar .path{color:#8B9490;}
+  .topbar .path b{color:#EDEFEC;font-weight:500;}
+
+  .toc{padding:40px 20px 40px 32px;position:sticky;top:0;align-self:start;height:100vh;overflow-y:auto;}
+  .toc .toc-label{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--slate);margin-bottom:14px;}
+  .toc ol{list-style:none;margin:0;padding:0;border-left:1px solid var(--line);}
+  .toc a{display:block;text-decoration:none;color:var(--slate);font-size:13.5px;padding:7px 0 7px 16px;margin-left:-1px;border-left:2px solid transparent;transition:color .15s ease,border-color .15s ease;}
+  .toc a:hover{color:var(--ink);}
+  .toc a.active{color:var(--ink);border-left:2px solid var(--teal);font-weight:500;}
+
+  main{padding:0 32px 100px;}
+  .content-inner{max-width:var(--maxw);}
+
+  .hero{padding:64px 0 40px;border-bottom:1px solid var(--line);margin-bottom:56px;}
+  .hero .eyebrow{font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:var(--teal);margin-bottom:16px;}
+  .hero h1{max-width:16ch;font-size:clamp(28px,4vw,42px);letter-spacing:-.01em;}
+  .hero .sub{color:var(--slate);max-width:62ch;font-size:16.5px;margin-top:14px;}
+
+  /* pipeline overview */
+  .pipeline-overview{display:flex;flex-direction:column;gap:8px;margin-top:30px;}
+  .po-step{
+    display:grid;grid-template-columns:34px 1fr auto;align-items:center;gap:14px;
+    background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--line);
+    border-radius:var(--radius-md);padding:12px 16px;
+  }
+  .po-step .po-num{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:15px;color:var(--slate);}
+  .po-step .po-label{font-size:14px;font-weight:500;}
+  .po-step .po-mod{font-family:'IBM Plex Mono',monospace;font-size:10.5px;padding:3px 9px;border-radius:20px;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap;}
+  .po-step.dup{border-left-color:var(--amber);} .po-step.dup .po-mod{background:var(--amber-soft);color:var(--amber);}
+  .po-step.text{border-left-color:var(--violet);} .po-step.text .po-mod{background:var(--violet-soft);color:var(--violet);}
+  .po-step.miss{border-left-color:var(--coral);} .po-step.miss .po-mod{background:var(--coral-soft);color:var(--coral);}
+  .po-step.feat{border-left-color:var(--teal);} .po-step.feat .po-mod{background:var(--teal-soft);color:var(--teal);}
+  .po-step.enc{border-left-color:var(--teal);} .po-step.enc .po-mod{background:var(--teal-soft);color:var(--teal);}
+  .po-step.sel{border-left-color:var(--slate);} .po-step.sel .po-mod{background:#EEF1F0;color:var(--slate);}
+  .po-step.std{border-left-color:var(--violet);} .po-step.std .po-mod{background:var(--violet-soft);color:var(--violet);}
+
+  section.block{margin-bottom:64px;}
+  .sec-num{font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:var(--teal);margin-bottom:6px;}
+  section.block h2{font-size:24px;margin-bottom:12px;}
+  section.block > p.lead{color:var(--ink);font-size:16px;}
+
+  /* code panel (shared) */
+  .code-panel{background:#1B2027;border-radius:var(--radius-md);overflow:hidden;margin:20px 0;border:1px solid #2B323C;}
+  .code-panel .cp-bar{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:#20262E;border-bottom:1px solid #2B323C;}
+  .cp-bar .cp-file{font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:#B8C0C7;}
+  .cp-bar .cp-dots{display:flex;gap:6px;}
+  .cp-bar .cp-dots span{width:9px;height:9px;border-radius:50%;background:#3A4149;}
+  .copy-btn{font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:#B8C0C7;background:#2B323C;border:none;border-radius:4px;padding:5px 10px;cursor:pointer;}
+  .copy-btn:hover{background:#37404B;}
+  .code-panel pre{margin:0;padding:20px 22px;overflow-x:auto;font-size:13px;}
+  .code-panel code.hljs{background:transparent;padding:0;}
+  .code-output{border-top:1px solid #2B323C;background:#161A20;padding:16px 22px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:#8FBF9F;white-space:pre;overflow-x:auto;}
+  .code-output .oh{color:#6C7783;}
+
+  /* checkpoint tables */
+  .checkpoint{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius-md);padding:18px;margin:18px 0;overflow-x:auto;}
+  .checkpoint .cp-title{font-family:'IBM Plex Mono',monospace;font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--slate);margin-bottom:10px;}
+  table.ckpt-table{border-collapse:collapse;font-family:'IBM Plex Mono',monospace;font-size:12.5px;width:100%;min-width:560px;}
+  table.ckpt-table th{background:#EEF1F0;padding:8px 12px;text-align:left;font-size:10.5px;text-transform:uppercase;color:var(--slate);font-weight:600;}
+  table.ckpt-table td{padding:8px 12px;border-top:1px solid var(--line);}
+  table.ckpt-table td.chg{color:var(--teal);font-weight:600;}
+  table.ckpt-table tr.gone td{opacity:.45;text-decoration:line-through;}
+  table.ckpt-table td.nanv{background:var(--coral-soft);color:var(--coral);font-weight:600;}
+
+  /* scaled output */
+  .scaled-wrap{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius-md);overflow:hidden;margin:20px 0;}
+  table.scaled-table{width:100%;border-collapse:collapse;font-family:'IBM Plex Mono',monospace;font-size:12.5px;}
+  table.scaled-table th{background:var(--violet-soft);color:var(--violet);padding:9px 12px;text-align:left;font-size:10.5px;text-transform:uppercase;letter-spacing:.04em;}
+  table.scaled-table td{padding:9px 12px;border-top:1px solid var(--line);}
+
+  .step-divider{display:flex;align-items:center;gap:10px;margin:36px 0 18px;}
+  .step-divider .sd-badge{
+    width:26px;height:26px;border-radius:50%;background:var(--ink);color:#EDEFEC;
+    display:flex;align-items:center;justify-content:center;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:13px;flex-shrink:0;
+  }
+  .step-divider .sd-line{flex:1;height:1px;background:var(--line);}
+  .step-divider h3{margin:0;font-size:17px;white-space:nowrap;}
+
+  /* recap grid */
+  .recap-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:24px 0;}
+  @media (max-width:640px){.recap-grid{grid-template-columns:1fr;}}
+  .recap-item{
+    display:flex;align-items:center;gap:10px;background:var(--panel);border:1px solid var(--line);
+    border-radius:var(--radius-md);padding:10px 14px;font-size:13px;
+  }
+  .recap-item .rc-tag{font-family:'IBM Plex Mono',monospace;font-size:10px;background:var(--teal-soft);color:var(--teal);padding:3px 8px;border-radius:20px;font-weight:600;flex-shrink:0;}
+
+  .outcome{background:var(--ink);color:#EDEFEC;border-radius:var(--radius-md);padding:32px 28px;margin-top:8px;}
+  .outcome .oc-label{font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:#8FBF9F;margin-bottom:14px;text-transform:uppercase;letter-spacing:.05em;}
+  .outcome p.oc-note{color:#EDEFEC;font-size:17px;margin:0;max-width:66ch;font-family:'Space Grotesk',sans-serif;line-height:1.45;}
+  .outcome p.oc-sub{color:#9AA3AC;font-size:14px;margin-top:12px;max-width:64ch;}
+
+  footer{text-align:center;padding:36px 0 60px;color:var(--slate);font-size:12.5px;font-family:'IBM Plex Mono',monospace;}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="mark">
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="9" width="3" height="6" fill="#0E7C86"/><rect x="6.5" y="5" width="3" height="10" fill="#D98E31"/><rect x="12" y="1" width="3" height="14" fill="#6E5A9E"/></svg>
+    DATA&nbsp;HANDLING&nbsp;·&nbsp;MODULE&nbsp;11&nbsp;·&nbsp;CAPSTONE
+  </div>
+  <div class="path">course<span>/</span><b>full-pipeline</b><span>/</span>section-11</div>
+</div>
+
+<div class="shell">
+
+  <nav class="toc" id="toc">
+    <div class="toc-label">ON THIS PAGE</div>
+    <ol>
+      <li><a href="#raw" class="tocLink">Raw dataset</a></li>
+      <li><a href="#s1" class="tocLink">Step 1 — Duplicates</a></li>
+      <li><a href="#s2" class="tocLink">Step 2 — Clean text</a></li>
+      <li><a href="#s3" class="tocLink">Step 3 — Missing values</a></li>
+      <li><a href="#s4" class="tocLink">Step 4 — New feature</a></li>
+      <li><a href="#s5" class="tocLink">Step 5 — Encode</a></li>
+      <li><a href="#s6" class="tocLink">Step 6 — Select features</a></li>
+      <li><a href="#s7" class="tocLink">Step 7 — Standardize</a></li>
+      <li><a href="#full" class="tocLink">Complete script</a></li>
+      <li><a href="#recap" class="tocLink">Pipeline recap</a></li>
+    </ol>
+  </nav>
+
+  <main>
+    <div class="content-inner">
+
+      <div class="hero">
+        <div class="eyebrow">CHAPTER 11 · EVERYTHING TOGETHER</div>
+        <h1>Complete Data Preprocessing Pipeline</h1>
+        <p class="sub">Every technique from Modules 5 through 10 — exploration, cleaning, missing values, transformation and scaling — chained into one realistic pipeline, run on a single customer dataset from raw to model-ready.</p>
+
+        <div class="pipeline-overview">
+          <div class="po-step dup"><span class="po-num">1</span><span class="po-label">Remove duplicates</span><span class="po-mod">Module 06</span></div>
+          <div class="po-step text"><span class="po-num">2</span><span class="po-label">Clean text</span><span class="po-mod">Module 06</span></div>
+          <div class="po-step miss"><span class="po-num">3</span><span class="po-label">Handle missing values</span><span class="po-mod">Module 07</span></div>
+          <div class="po-step feat"><span class="po-num">4</span><span class="po-label">Create new feature</span><span class="po-mod">Module 08</span></div>
+          <div class="po-step enc"><span class="po-num">5</span><span class="po-label">Encode categorical data</span><span class="po-mod">Module 08</span></div>
+          <div class="po-step sel"><span class="po-num">6</span><span class="po-label">Select numerical features</span><span class="po-mod">Prep</span></div>
+          <div class="po-step std"><span class="po-num">7</span><span class="po-label">Standardize</span><span class="po-mod">Module 10</span></div>
+        </div>
+      </div>
+
+      <!-- Raw dataset -->
+      <section class="block" id="raw">
+        <div class="sec-num">SETUP</div>
+        <h2>A realistic customer dataset</h2>
+        <p class="lead">The same kind of flaws as Module 5's example, with one addition — a <span class="mono">purchases</span> column for feature engineering later.</p>
+
+        <div class="code-panel">
+          <div class="cp-bar">
+            <div class="cp-dots"><span></span><span></span><span></span></div>
+            <div class="cp-file">pipeline.py</div>
+            <button class="copy-btn" onclick="copyCode(this,'raw-code')">Copy</button>
+          </div>
+          <pre><code class="language-python" id="raw-code">import pandas as pd
+
+data = {
+    "customer_id": [1, 2, 3, 4, 5, 5],
+    "name": ["Rahul", "Priya", "Amit", "Sneha", "Ravi", "Ravi"],
+    "age": [25, 28, None, 32, 29, 29],
+    "salary": [40000, 55000, 45000, None, 60000, 60000],
+    "city": ["Delhi", "Pune", "Mumbai", "Pune", "delhi", "delhi"],
+    "purchases": [3, 5, 2, 7, 10, 10]
+}
+
+df = pd.DataFrame(data)
+
+print("RAW DATA")
+print(df)</code></pre>
+        </div>
+
+        <div class="checkpoint">
+          <div class="cp-title">RAW DATA — 6 rows</div>
+          <table class="ckpt-table">
+            <thead><tr><th>customer_id</th><th>name</th><th>age</th><th>salary</th><th>city</th><th>purchases</th></tr></thead>
+            <tbody>
+              <tr><td>1</td><td>Rahul</td><td>25</td><td>40000</td><td>Delhi</td><td>3</td></tr>
+              <tr><td>2</td><td>Priya</td><td>28</td><td>55000</td><td>Pune</td><td>5</td></tr>
+              <tr><td>3</td><td>Amit</td><td class="nanv">NaN</td><td>45000</td><td>Mumbai</td><td>2</td></tr>
+              <tr><td>4</td><td>Sneha</td><td>32</td><td class="nanv">NaN</td><td>Pune</td><td>7</td></tr>
+              <tr><td>5</td><td>Ravi</td><td>29</td><td>60000</td><td>delhi</td><td>10</td></tr>
+              <tr class="gone"><td>5</td><td>Ravi</td><td>29</td><td>60000</td><td>delhi</td><td>10</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Step 1 -->
+      <div class="step-divider" id="s1"><span class="sd-badge">1</span><h3>Remove duplicates</h3><span class="sd-line"></span></div>
+      <div class="code-panel">
+        <div class="cp-bar"><div class="cp-dots"><span></span><span></span><span></span></div><div class="cp-file">step1.py</div></div>
+        <pre><code class="language-python">df = df.drop_duplicates()
+
+print("\nAfter duplicate removal:")
+print(df)</code></pre>
+      </div>
+      <p style="font-size:13.5px;color:var(--slate);">Row index 5 (Ravi's exact repeat) is dropped — 6 rows become 5.</p>
+
+      <!-- Step 2 -->
+      <div class="step-divider" id="s2"><span class="sd-badge">2</span><h3>Clean text</h3><span class="sd-line"></span></div>
+      <div class="code-panel">
+        <div class="cp-bar"><div class="cp-dots"><span></span><span></span><span></span></div><div class="cp-file">step2.py</div></div>
+        <pre><code class="language-python">df["name"] = df["name"].str.strip().str.title()
+df["city"] = df["city"].str.strip().str.title()</code></pre>
+      </div>
+      <p style="font-size:13.5px;color:var(--slate);">"delhi" → "Delhi" — the same casing fix as Module 6, applied to this new dataset.</p>
+
+      <!-- Step 3 -->
+      <div class="step-divider" id="s3"><span class="sd-badge">3</span><h3>Handle missing values</h3><span class="sd-line"></span></div>
+      <div class="code-panel">
+        <div class="cp-bar"><div class="cp-dots"><span></span><span></span><span></span></div><div class="cp-file">step3.py</div></div>
+        <pre><code class="language-python">df["age"] = df["age"].fillna(df["age"].median())
+df["salary"] = df["salary"].fillna(df["salary"].median())</code></pre>
+      </div>
+
+      <div class="checkpoint">
+        <div class="cp-title">AFTER STEPS 1–3 — 5 rows, clean and complete</div>
+        <table class="ckpt-table">
+          <thead><tr><th>customer_id</th><th>name</th><th>age</th><th>salary</th><th>city</th><th>purchases</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td>Rahul</td><td>25.0</td><td>40000.0</td><td>Delhi</td><td>3</td></tr>
+            <tr><td>2</td><td>Priya</td><td>28.0</td><td>55000.0</td><td>Pune</td><td>5</td></tr>
+            <tr><td>3</td><td>Amit</td><td class="chg">28.5</td><td>45000.0</td><td>Mumbai</td><td>2</td></tr>
+            <tr><td>4</td><td>Sneha</td><td>32.0</td><td class="chg">50000.0</td><td>Pune</td><td>7</td></tr>
+            <tr><td>5</td><td>Ravi</td><td>29.0</td><td>60000.0</td><td>Delhi</td><td>10</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="font-size:13px;color:var(--slate);">age median of [25, 28, 29, 32] = 28.5; salary median of [40000, 45000, 55000, 60000] = 50000.</p>
+
+      <!-- Step 4 -->
+      <div class="step-divider" id="s4"><span class="sd-badge">4</span><h3>Create new feature</h3><span class="sd-line"></span></div>
+      <div class="code-panel">
+        <div class="cp-bar"><div class="cp-dots"><span></span><span></span><span></span></div><div class="cp-file">step4.py</div></div>
+        <pre><code class="language-python">df["annual_salary"] = df["salary"] * 12</code></pre>
+      </div>
+      <p style="font-size:13.5px;color:var(--slate);">A derived column — the same "create a new column" pattern from Module 8, now feeding directly into a real pipeline.</p>
+
+      <!-- Step 5 -->
+      <div class="step-divider" id="s5"><span class="sd-badge">5</span><h3>Encode categorical data</h3><span class="sd-line"></span></div>
+      <div class="code-panel">
+        <div class="cp-bar"><div class="cp-dots"><span></span><span></span><span></span></div><div class="cp-file">step5.py</div></div>
+        <pre><code class="language-python">df = pd.get_dummies(
+    df,
+    columns=["city"],
+    dtype=int
+)</code></pre>
+      </div>
+      <p style="font-size:13.5px;color:var(--slate);"><span class="mono">city</span> becomes three binary columns: <span class="mono">city_Delhi</span>, <span class="mono">city_Mumbai</span>, <span class="mono">city_Pune</span> — one-hot encoding exactly as in Module 8.</p>
+
+      <!-- Step 6 -->
+      <div class="step-divider" id="s6"><span class="sd-badge">6</span><h3>Select numerical features</h3><span class="sd-line"></span></div>
+      <div class="code-panel">
+        <div class="cp-bar"><div class="cp-dots"><span></span><span></span><span></span></div><div class="cp-file">step6.py</div></div>
+        <pre><code class="language-python">features = [
+    "age",
+    "salary",
+    "purchases",
+    "annual_salary"
+]
+
+X = df[features]</code></pre>
+      </div>
+      <p style="font-size:13.5px;color:var(--slate);">Identifiers like <span class="mono">customer_id</span> and <span class="mono">name</span> are dropped here — they carry no predictive signal and should never be scaled or fed into a model.</p>
+
+      <div class="checkpoint">
+        <div class="cp-title">X — SELECTED FEATURES BEFORE SCALING</div>
+        <table class="ckpt-table">
+          <thead><tr><th>age</th><th>salary</th><th>purchases</th><th>annual_salary</th></tr></thead>
+          <tbody>
+            <tr><td>25.0</td><td>40000</td><td>3</td><td>480000</td></tr>
+            <tr><td>28.0</td><td>55000</td><td>5</td><td>660000</td></tr>
+            <tr><td>28.5</td><td>45000</td><td>2</td><td>540000</td></tr>
+            <tr><td>32.0</td><td>50000</td><td>7</td><td>600000</td></tr>
+            <tr><td>29.0</td><td>60000</td><td>10</td><td>720000</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Step 7 -->
+      <div class="step-divider" id="s7"><span class="sd-badge">7</span><h3>Standardize</h3><span class="sd-line"></span></div>
+      <div class="code-panel">
+        <div class="cp-bar"><div class="cp-dots"><span></span><span></span><span></span></div><div class="cp-file">step7.py</div></div>
+        <pre><code class="language-python">from sklearn.preprocessing import StandardScaler
+
+scaler = StandardScaler()
+
+X_scaled = scaler.fit_transform(X)
+
+print(X_scaled)</code></pre>
+      </div>
+
+      <div class="scaled-wrap">
+        <table class="scaled-table">
+          <thead><tr><th>age</th><th>salary</th><th>purchases</th><th>annual_salary</th></tr></thead>
+          <tbody>
+            <tr><td>−1.565</td><td>−1.414</td><td>−0.836</td><td>−1.414</td></tr>
+            <tr><td>−0.224</td><td>0.707</td><td>−0.139</td><td>0.707</td></tr>
+            <tr><td>0.000</td><td>−0.707</td><td>−1.185</td><td>−0.707</td></tr>
+            <tr><td>1.565</td><td>0.000</td><td>0.557</td><td>0.000</td></tr>
+            <tr><td>0.224</td><td>1.414</td><td>1.602</td><td>1.414</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="font-size:13px;color:var(--slate);"><span class="mono">salary</span> and <span class="mono">annual_salary</span> land on identical z-scores — scaling only cares about relative spread, and multiplying by a constant (×12) doesn't change that spread's shape.</p>
+
+      <!-- Full script -->
+      <section class="block" id="full" style="margin-top:56px;">
+        <div class="sec-num">COMPLETE VERSION</div>
+        <h2>The full pipeline, end to end</h2>
+        <p class="lead">Every step above, as one script — from raw dictionary to a scaled, model-ready feature matrix.</p>
+
+        <div class="code-panel">
+          <div class="cp-bar">
+            <div class="cp-dots"><span></span><span></span><span></span></div>
+            <div class="cp-file">full_pipeline.py</div>
+            <button class="copy-btn" onclick="copyCode(this,'full-code')">Copy</button>
+          </div>
+          <pre><code class="language-python" id="full-code">import pandas as pd
+from sklearn.preprocessing import StandardScaler
+
+# --------------------------------
+# 1. Create raw dataset
+# --------------------------------
+
+data = {
+    "customer_id": [1, 2, 3, 4, 5, 5],
+    "name": ["Rahul", "Priya", "Amit", "Sneha", "Ravi", "Ravi"],
+    "age": [25, 28, None, 32, 29, 29],
+    "salary": [40000, 55000, 45000, None, 60000, 60000],
+    "city": ["Delhi", "Pune", "Mumbai", "Pune", "delhi", "delhi"],
+    "purchases": [3, 5, 2, 7, 10, 10]
+}
+
+df = pd.DataFrame(data)
+
+print("RAW DATA")
+print(df)
+
+# --------------------------------
+# 2. Remove duplicates
+# --------------------------------
+
+df = df.drop_duplicates()
+
+# --------------------------------
+# 3. Clean text
+# --------------------------------
+
+df["name"] = df["name"].str.strip().str.title()
+df["city"] = df["city"].str.strip().str.title()
+
+# --------------------------------
+# 4. Handle missing values
+# --------------------------------
+
+df["age"] = df["age"].fillna(df["age"].median())
+df["salary"] = df["salary"].fillna(df["salary"].median())
+
+# --------------------------------
+# 5. Feature engineering
+# --------------------------------
+
+df["annual_salary"] = df["salary"] * 12
+
+# --------------------------------
+# 6. Convert categorical values
+# --------------------------------
+
+df = pd.get_dummies(
+    df,
+    columns=["city"],
+    dtype=int
+)
+
+# --------------------------------
+# 7. Select features
+# --------------------------------
+
+features = [
+    "age",
+    "salary",
+    "purchases",
+    "annual_salary"
+]
+
+X = df[features]
+
+# --------------------------------
+# 8. Standardization
+# --------------------------------
+
+scaler = StandardScaler()
+
+X_scaled = scaler.fit_transform(X)
+
+print("\nProcessed Features:")
+print(X_scaled)</code></pre>
+        </div>
+      </section>
+
+      <!-- Recap -->
+      <section class="block" id="recap" style="margin-bottom:24px;">
+        <div class="sec-num">RECAP</div>
+        <h2>Where every step came from</h2>
+        <p class="lead">Nothing in this pipeline is new — it's every earlier module, applied in the order a real project actually needs them.</p>
+
+        <div class="recap-grid">
+          <div class="recap-item"><span class="rc-tag">05</span>Explore &amp; profile the raw data first</div>
+          <div class="recap-item"><span class="rc-tag">06</span>Drop duplicates, standardise text casing</div>
+          <div class="recap-item"><span class="rc-tag">07</span>Fill missing values — deliberately, not blindly</div>
+          <div class="recap-item"><span class="rc-tag">08</span>Engineer new columns, encode categories</div>
+          <div class="recap-item"><span class="rc-tag">09/10</span>Scale numeric features before modelling</div>
+          <div class="recap-item"><span class="rc-tag">03</span>Know which columns are IDs, not signal</div>
+        </div>
+
+        <div class="outcome">
+          <div class="oc-label">The capstone idea</div>
+          <p class="oc-note">Preprocessing isn't a single function call — it's a sequence of small, deliberate decisions, each one addressing a specific kind of flaw, applied in an order that doesn't quietly corrupt the step before it.</p>
+          <p class="oc-sub">Get comfortable running exactly this shape of pipeline — explore, clean, handle gaps, engineer, encode, scale — and you can adapt it to almost any tabular dataset you're handed.</p>
+        </div>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<footer>MODULE 11 — COMPLETE DATA PREPROCESSING PIPELINE</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/python.min.js"></script>
+<script>
+  if (window.hljs) { hljs.highlightAll(); }
+
+  function copyCode(btn, id){
+    const code = document.getElementById(id).innerText;
+    navigator.clipboard.writeText(code).then(()=>{
+      const old = btn.textContent;
+      btn.textContent = 'Copied';
+      setTimeout(()=>btn.textContent = old, 1400);
+    });
+  }
+
+  const links = document.querySelectorAll('.tocLink');
+  const sections = Array.from(links).map(l => document.querySelector(l.getAttribute('href')));
+  function onScroll(){
+    let current = sections[0];
+    const y = window.scrollY + 120;
+    sections.forEach(sec => { if (sec && sec.offsetTop <= y) current = sec; });
+    links.forEach(l => l.classList.toggle('active', l.getAttribute('href') === '#' + current.id));
+  }
+  window.addEventListener('scroll', onScroll);
+  onScroll();
+</script>
+</body>
+</html>

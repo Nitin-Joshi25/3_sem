@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Data Exploration &amp; Data Quality — Module 5</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+<style>
+  :root{
+    --ink:#14181F;
+    --paper:#F4F6F5;
+    --panel:#FFFFFF;
+    --line:#DCE3E1;
+    --teal:#0E7C86;
+    --teal-soft:#E4F1F1;
+    --amber:#D98E31;
+    --amber-soft:#FBEEDD;
+    --violet:#6E5A9E;
+    --violet-soft:#EDE9F5;
+    --coral:#C0524A;
+    --coral-soft:#F7E7E5;
+    --green:#3E8E5A;
+    --green-soft:#E6F1EA;
+    --slate:#5B6570;
+    --radius-sm:4px;
+    --radius-md:8px;
+    --maxw:920px;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:'IBM Plex Sans',sans-serif;font-size:16px;line-height:1.65;-webkit-font-smoothing:antialiased;}
+  h1,h2,h3,h4{font-family:'Space Grotesk',sans-serif;color:var(--ink);line-height:1.2;margin:0 0 .5em 0;}
+  code,.mono{font-family:'IBM Plex Mono',monospace;}
+  p{max-width:72ch;}
+  a{color:var(--teal);}
+
+  .shell{display:grid;grid-template-columns:240px minmax(0,1fr);max-width:1240px;margin:0 auto;}
+  @media (max-width:880px){.shell{grid-template-columns:1fr;} .toc{display:none;}}
+
+  .topbar{background:var(--ink);color:#EDEFEC;padding:14px 32px;display:flex;align-items:center;justify-content:space-between;font-family:'IBM Plex Mono',monospace;font-size:12.5px;letter-spacing:.02em;}
+  .topbar .mark{display:flex;align-items:center;gap:10px;color:#EDEFEC;}
+  .topbar .path{color:#8B9490;}
+  .topbar .path b{color:#EDEFEC;font-weight:500;}
+
+  .toc{padding:40px 20px 40px 32px;position:sticky;top:0;align-self:start;height:100vh;overflow-y:auto;}
+  .toc .toc-label{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--slate);margin-bottom:14px;}
+  .toc ol{list-style:none;margin:0;padding:0;border-left:1px solid var(--line);}
+  .toc a{display:block;text-decoration:none;color:var(--slate);font-size:13.5px;padding:7px 0 7px 16px;margin-left:-1px;border-left:2px solid transparent;transition:color .15s ease,border-color .15s ease;}
+  .toc a:hover{color:var(--ink);}
+  .toc a.active{color:var(--ink);border-left:2px solid var(--teal);font-weight:500;}
+
+  main{padding:0 32px 100px;}
+  .content-inner{max-width:var(--maxw);}
+
+  .hero{padding:64px 0 40px;border-bottom:1px solid var(--line);margin-bottom:56px;}
+  .hero .eyebrow{font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:var(--teal);margin-bottom:16px;}
+  .hero h1{font-size:clamp(28px,4vw,42px);max-width:16ch;letter-spacing:-.01em;}
+  .hero .sub{color:var(--slate);max-width:58ch;font-size:16.5px;margin-top:14px;}
+
+  section.block{margin-bottom:72px;}
+  .sec-num{font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:var(--teal);margin-bottom:6px;}
+  section.block h2{font-size:26px;margin-bottom:14px;}
+  section.block > p.lead{color:var(--ink);font-size:16.5px;}
+
+  /* code panel (shared) */
+  .code-panel{background:#1B2027;border-radius:var(--radius-md);overflow:hidden;margin:22px 0;border:1px solid #2B323C;}
+  .code-panel .cp-bar{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:#20262E;border-bottom:1px solid #2B323C;}
+  .cp-bar .cp-file{font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:#B8C0C7;}
+  .cp-bar .cp-dots{display:flex;gap:6px;}
+  .cp-bar .cp-dots span{width:9px;height:9px;border-radius:50%;background:#3A4149;}
+  .copy-btn{font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:#B8C0C7;background:#2B323C;border:none;border-radius:4px;padding:5px 10px;cursor:pointer;}
+  .copy-btn:hover{background:#37404B;}
+  .code-panel pre{margin:0;padding:20px 22px;overflow-x:auto;font-size:13.5px;}
+  .code-panel code.hljs{background:transparent;padding:0;}
+  .code-output{border-top:1px solid #2B323C;background:#161A20;padding:16px 22px;font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:#8FBF9F;white-space:pre;overflow-x:auto;}
+  .code-output .oh{color:#6C7783;}
+
+  /* annotated dataset table */
+  .annot-wrap{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius-md);padding:22px;margin:22px 0;overflow-x:auto;}
+  table.annot-table{border-collapse:collapse;font-family:'IBM Plex Mono',monospace;font-size:13px;width:100%;min-width:560px;}
+  table.annot-table th{
+    background:#EEF1F0;text-align:left;padding:9px 14px;font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--slate);font-weight:600;
+  }
+  table.annot-table td{padding:9px 14px;border-top:1px solid var(--line);}
+  table.annot-table td.missing{background:var(--coral-soft);color:var(--coral);font-weight:600;}
+  table.annot-table td.dup{background:var(--amber-soft);}
+  table.annot-table td.incon{background:var(--violet-soft);color:var(--violet);font-weight:600;}
+  table.annot-table tr.dup-row{background:var(--amber-soft);}
+
+  .annot-legend{display:flex;flex-wrap:wrap;gap:18px;margin-top:16px;padding-top:16px;border-top:1px solid var(--line);}
+  .annot-legend .al-item{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--slate);}
+  .annot-legend .al-swatch{width:12px;height:12px;border-radius:3px;}
+
+  /* inspection command grid */
+  .cmd-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:24px 0;}
+  @media (max-width:640px){.cmd-grid{grid-template-columns:1fr;}}
+  .cmd-card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius-md);padding:16px 18px;}
+  .cmd-card code.snippet{
+    display:block;font-family:'IBM Plex Mono',monospace;font-size:13.5px;background:var(--teal-soft);color:var(--teal);
+    padding:8px 12px;border-radius:var(--radius-sm);margin-bottom:10px;font-weight:600;
+  }
+  .cmd-card p{font-size:13.5px;color:var(--slate);margin:0;max-width:none;}
+
+  /* describe table */
+  .describe-wrap{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius-md);overflow:hidden;margin:22px 0;}
+  table.describe-table{width:100%;border-collapse:collapse;font-family:'IBM Plex Mono',monospace;font-size:13px;}
+  table.describe-table th{background:var(--teal-soft);color:var(--teal);padding:9px 14px;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.04em;}
+  table.describe-table td{padding:9px 14px;border-top:1px solid var(--line);}
+  table.describe-table td:first-child{color:var(--slate);}
+
+  /* missing values bars */
+  .miss-wrap{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius-md);padding:20px;margin:22px 0;}
+  .miss-row{display:grid;grid-template-columns:120px 1fr 40px;align-items:center;gap:10px;padding:8px 0;}
+  .miss-row .miss-label{font-family:'IBM Plex Mono',monospace;font-size:13px;}
+  .miss-row .miss-track{height:10px;background:var(--paper);border-radius:6px;overflow:hidden;}
+  .miss-row .miss-fill{height:100%;background:var(--coral);border-radius:6px;}
+  .miss-row .miss-count{font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:var(--slate);text-align:right;}
+
+  /* value counts bars */
+  .vc-wrap{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius-md);padding:20px;margin:22px 0;}
+  .vc-row{display:grid;grid-template-columns:110px 1fr 30px;align-items:center;gap:10px;padding:7px 0;}
+  .vc-row .vc-label{font-family:'IBM Plex Mono',monospace;font-size:13px;}
+  .vc-row .vc-track{height:10px;background:var(--paper);border-radius:6px;overflow:hidden;}
+  .vc-row .vc-fill{height:100%;background:var(--violet);border-radius:6px;}
+  .vc-row .vc-count{font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:var(--slate);text-align:right;}
+  .vc-row.flag .vc-label{color:var(--violet);font-weight:600;}
+
+  /* checklist */
+  .checklist{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:26px 0;}
+  @media (max-width:640px){.checklist{grid-template-columns:1fr;}}
+  .cl-item{
+    background:var(--panel);border:1px solid var(--line);border-radius:var(--radius-md);
+    padding:14px 16px;display:flex;align-items:flex-start;gap:12px;font-size:14px;
+  }
+  .cl-item .cl-box{
+    width:18px;height:18px;border:2px solid var(--teal);border-radius:4px;flex-shrink:0;margin-top:1px;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .cl-item .cl-box svg{width:11px;height:11px;}
+
+  .outcome{background:var(--ink);color:#EDEFEC;border-radius:var(--radius-md);padding:32px 28px;margin-top:8px;}
+  .outcome .oc-label{font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:#8FBF9F;margin-bottom:14px;text-transform:uppercase;letter-spacing:.05em;}
+  .outcome p.oc-note{color:#EDEFEC;font-size:17px;margin-top:0;max-width:64ch;font-family:'Space Grotesk',sans-serif;line-height:1.4;}
+  .outcome p.oc-sub{color:#9AA3AC;font-size:14px;margin-top:10px;max-width:60ch;}
+
+  footer{text-align:center;padding:36px 0 60px;color:var(--slate);font-size:12.5px;font-family:'IBM Plex Mono',monospace;}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="mark">
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="9" width="3" height="6" fill="#0E7C86"/><rect x="6.5" y="5" width="3" height="10" fill="#D98E31"/><rect x="12" y="1" width="3" height="14" fill="#6E5A9E"/></svg>
+    DATA&nbsp;HANDLING&nbsp;·&nbsp;MODULE&nbsp;05
+  </div>
+  <div class="path">course<span>/</span><b>data-quality</b><span>/</span>section-5</div>
+</div>
+
+<div class="shell">
+
+  <nav class="toc" id="toc">
+    <div class="toc-label">ON THIS PAGE</div>
+    <ol>
+      <li><a href="#dataset" class="tocLink">The dataset</a></li>
+      <li><a href="#s51" class="tocLink">5.1 Inspect data</a></li>
+      <li><a href="#s52" class="tocLink">5.2 Statistical summary</a></li>
+      <li><a href="#s53" class="tocLink">5.3 Missing values</a></li>
+      <li><a href="#s54" class="tocLink">5.4 Duplicate records</a></li>
+      <li><a href="#s55" class="tocLink">5.5 Unique values</a></li>
+      <li><a href="#checklist" class="tocLink">Quality checklist</a></li>
+    </ol>
+  </nav>
+
+  <main>
+    <div class="content-inner">
+
+      <div class="hero">
+        <div class="eyebrow">CHAPTER 05 · WHERE PREPROCESSING BEGINS</div>
+        <h1>Data Exploration &amp; Data Quality</h1>
+        <p class="sub">Every preprocessing pipeline starts by asking one question: what's actually wrong with this data? Before cleaning anything, you have to see it — clearly, and in detail.</p>
+      </div>
+
+      <!-- The dataset -->
+      <section class="block" id="dataset">
+        <div class="sec-num">SETUP</div>
+        <h2>A deliberately imperfect dataset</h2>
+        <p class="lead">To practice on something realistic, we build a small customer table with the exact flaws you'll meet in real projects: a duplicated record, missing values, and inconsistent category casing.</p>
+
+        <div class="code-panel">
+          <div class="cp-bar">
+            <div class="cp-dots"><span></span><span></span><span></span></div>
+            <div class="cp-file">build_dataset.py</div>
+            <button class="copy-btn" onclick="copyCode(this,'build-code')">Copy</button>
+          </div>
+          <pre><code class="language-python" id="build-code">import pandas as pd
+
+data = {
+    "customer_id": [1, 2, 3, 4, 5, 5],
+    "name": ["Rahul", "Priya", "Amit", "Sneha", "Ravi", "Ravi"],
+    "age": [25, 28, None, 32, 29, 29],
+    "salary": [40000, 55000, 45000, None, 60000, 60000],
+    "city": ["Delhi", "Delhi", "Mumbai", "Pune", "delhi", "delhi"]
+}
+
+df = pd.DataFrame(data)
+
+print(df)</code></pre>
+        </div>
+
+        <div class="annot-wrap">
+          <table class="annot-table">
+            <thead><tr><th>customer_id</th><th>name</th><th>age</th><th>salary</th><th>city</th></tr></thead>
+            <tbody>
+              <tr><td>1</td><td>Rahul</td><td>25</td><td>40000</td><td>Delhi</td></tr>
+              <tr><td>2</td><td>Priya</td><td>28</td><td>55000</td><td>Delhi</td></tr>
+              <tr><td>3</td><td>Amit</td><td class="missing">NaN</td><td>45000</td><td>Mumbai</td></tr>
+              <tr><td>4</td><td>Sneha</td><td>32</td><td class="missing">NaN</td><td>Pune</td></tr>
+              <tr class="dup-row"><td>5</td><td>Ravi</td><td>29</td><td>60000</td><td class="incon">delhi</td></tr>
+              <tr class="dup-row"><td>5</td><td>Ravi</td><td>29</td><td>60000</td><td class="incon">delhi</td></tr>
+            </tbody>
+          </table>
+          <div class="annot-legend">
+            <div class="al-item"><span class="al-swatch" style="background:var(--coral-soft);border:1px solid var(--coral);"></span>Missing value</div>
+            <div class="al-item"><span class="al-swatch" style="background:var(--amber-soft);border:1px solid var(--amber);"></span>Duplicate row</div>
+            <div class="al-item"><span class="al-swatch" style="background:var(--violet-soft);border:1px solid var(--violet);"></span>Inconsistent category ("delhi" vs "Delhi")</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 5.1 Inspect -->
+      <section class="block" id="s51">
+        <div class="sec-num">5.1</div>
+        <h2>Inspect the data</h2>
+        <p class="lead">Before anything else, get oriented: how big is this table, what are its columns, and what type is each one?</p>
+
+        <div class="cmd-grid">
+          <div class="cmd-card">
+            <code class="snippet">df.head()</code>
+            <p>Shows the first 5 rows — a quick sanity check that the data loaded correctly.</p>
+          </div>
+          <div class="cmd-card">
+            <code class="snippet">df.tail()</code>
+            <p>Shows the last 5 rows — useful for spotting trailing junk rows or footers.</p>
+          </div>
+          <div class="cmd-card">
+            <code class="snippet">df.shape</code>
+            <p>Returns (rows, columns) — here, <span class="mono">(6, 5)</span>.</p>
+          </div>
+          <div class="cmd-card">
+            <code class="snippet">df.columns</code>
+            <p>Lists every column name — the first place to catch typos or inconsistent naming.</p>
+          </div>
+          <div class="cmd-card" style="grid-column:1 / -1;">
+            <code class="snippet">df.dtypes</code>
+            <p>Confirms whether pandas inferred each column correctly — a numeric column showing as <span class="mono">object</span> is an early warning sign.</p>
+          </div>
+        </div>
+
+        <div class="code-panel">
+          <div class="cp-bar">
+            <div class="cp-dots"><span></span><span></span><span></span></div>
+            <div class="cp-file">inspect.py</div>
+            <button class="copy-btn" onclick="copyCode(this,'inspect-code')">Copy</button>
+          </div>
+          <pre><code class="language-python" id="inspect-code">print(df.head())
+print(df.tail())
+print(df.shape)
+print(df.columns)
+print(df.dtypes)</code></pre>
+          <div class="code-output"><span class="oh">$ python inspect.py</span>
+(6, 5)
+Index(['customer_id', 'name', 'age', 'salary', 'city'], dtype='object')
+customer_id      int64
+name            object
+age            float64
+salary         float64
+city            object
+dtype: object</div>
+        </div>
+      </section>
+
+      <!-- 5.2 Statistical summary -->
+      <section class="block" id="s52">
+        <div class="sec-num">5.2</div>
+        <h2>Statistical summary</h2>
+        <p class="lead"><span class="mono">df.describe()</span> summarizes every numeric column at once — count, mean, spread and range — in a single call.</p>
+
+        <div class="code-panel">
+          <div class="cp-bar">
+            <div class="cp-dots"><span></span><span></span><span></span></div>
+            <div class="cp-file">summary.py</div>
+            <button class="copy-btn" onclick="copyCode(this,'summary-code')">Copy</button>
+          </div>
+          <pre><code class="language-python" id="summary-code">print(df.describe())</code></pre>
+        </div>
+
+        <div class="describe-wrap">
+          <table class="describe-table">
+            <thead><tr><th></th><th>customer_id</th><th>age</th><th>salary</th></tr></thead>
+            <tbody>
+              <tr><td>count</td><td>6.0</td><td>5.0</td><td>5.0</td></tr>
+              <tr><td>mean</td><td>3.33</td><td>28.6</td><td>52000.0</td></tr>
+              <tr><td>std</td><td>1.63</td><td>2.51</td><td>9082.95</td></tr>
+              <tr><td>min</td><td>1.0</td><td>25.0</td><td>40000.0</td></tr>
+              <tr><td>50%</td><td>3.5</td><td>29.0</td><td>55000.0</td></tr>
+              <tr><td>max</td><td>5.0</td><td>32.0</td><td>60000.0</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p style="font-size:13.5px;color:var(--slate);">Notice <span class="mono">count</span> for age and salary is 5, not 6 — describe() silently skips the missing values. That gap is your first clue to check <span class="mono">isna()</span> next.</p>
+      </section>
+
+      <!-- 5.3 Missing values -->
+      <section class="block" id="s53">
+        <div class="sec-num">5.3</div>
+        <h2>Missing values</h2>
+        <p class="lead"><span class="mono">df.isna().sum()</span> counts nulls per column directly, rather than inferring them from a shorter count.</p>
+
+        <div class="code-panel">
+          <div class="cp-bar">
+            <div class="cp-dots"><span></span><span></span><span></span></div>
+            <div class="cp-file">missing.py</div>
+            <button class="copy-btn" onclick="copyCode(this,'missing-code')">Copy</button>
+          </div>
+          <pre><code class="language-python" id="missing-code">print(df.isna().sum())</code></pre>
+        </div>
+
+        <div class="miss-wrap">
+          <div class="miss-row"><span class="miss-label">customer_id</span><div class="miss-track"><div class="miss-fill" style="width:0%;"></div></div><span class="miss-count">0</span></div>
+          <div class="miss-row"><span class="miss-label">name</span><div class="miss-track"><div class="miss-fill" style="width:0%;"></div></div><span class="miss-count">0</span></div>
+          <div class="miss-row"><span class="miss-label">age</span><div class="miss-track"><div class="miss-fill" style="width:17%;"></div></div><span class="miss-count">1</span></div>
+          <div class="miss-row"><span class="miss-label">salary</span><div class="miss-track"><div class="miss-fill" style="width:17%;"></div></div><span class="miss-count">1</span></div>
+          <div class="miss-row"><span class="miss-label">city</span><div class="miss-track"><div class="miss-fill" style="width:0%;"></div></div><span class="miss-count">0</span></div>
+        </div>
+      </section>
+
+      <!-- 5.4 Duplicates -->
+      <section class="block" id="s54">
+        <div class="sec-num">5.4</div>
+        <h2>Duplicate records</h2>
+        <p class="lead"><span class="mono">df.duplicated()</span> returns a boolean series — <span class="mono">True</span> wherever a row is an exact repeat of an earlier one.</p>
+
+        <div class="code-panel">
+          <div class="cp-bar">
+            <div class="cp-dots"><span></span><span></span><span></span></div>
+            <div class="cp-file">duplicates.py</div>
+            <button class="copy-btn" onclick="copyCode(this,'dup-code')">Copy</button>
+          </div>
+          <pre><code class="language-python" id="dup-code">print(df.duplicated())</code></pre>
+          <div class="code-output"><span class="oh">$ python duplicates.py</span>
+0    False
+1    False
+2    False
+3    False
+4    False
+5     True
+dtype: bool</div>
+        </div>
+        <p style="font-size:13.5px;color:var(--slate);">Only row index <span class="mono">5</span> is flagged — the <em>first</em> occurrence of Ravi's record (index 4) is kept as the original, and the repeat is what's marked.</p>
+      </section>
+
+      <!-- 5.5 Unique values -->
+      <section class="block" id="s55">
+        <div class="sec-num">5.5</div>
+        <h2>Unique values</h2>
+        <p class="lead">Categorical columns hide a different kind of problem — the same real-world value spelled two different ways.</p>
+
+        <div class="code-panel">
+          <div class="cp-bar">
+            <div class="cp-dots"><span></span><span></span><span></span></div>
+            <div class="cp-file">unique.py</div>
+            <button class="copy-btn" onclick="copyCode(this,'unique-code')">Copy</button>
+          </div>
+          <pre><code class="language-python" id="unique-code">print(df["city"].unique())
+print(df["city"].value_counts())</code></pre>
+          <div class="code-output"><span class="oh">$ python unique.py</span>
+['Delhi' 'Mumbai' 'Pune' 'delhi']</div>
+        </div>
+
+        <div class="vc-wrap">
+          <div class="vc-row"><span class="vc-label">Delhi</span><div class="vc-track"><div class="vc-fill" style="width:66%;"></div></div><span class="vc-count">2</span></div>
+          <div class="vc-row flag"><span class="vc-label">delhi</span><div class="vc-track"><div class="vc-fill" style="width:66%;background:var(--violet);opacity:.6;"></div></div><span class="vc-count">2</span></div>
+          <div class="vc-row"><span class="vc-label">Mumbai</span><div class="vc-track"><div class="vc-fill" style="width:33%;"></div></div><span class="vc-count">1</span></div>
+          <div class="vc-row"><span class="vc-label">Pune</span><div class="vc-track"><div class="vc-fill" style="width:33%;"></div></div><span class="vc-count">1</span></div>
+        </div>
+        <p style="font-size:13.5px;color:var(--slate);"><span class="mono">unique()</span> reports 4 distinct city labels — but "Delhi" and "delhi" are the same city. Without standardising case first, every count and group-by downstream silently splits one city into two.</p>
+      </section>
+
+      <!-- Checklist -->
+      <section class="block" id="checklist" style="margin-bottom:24px;">
+        <div class="sec-num">MINDSET</div>
+        <h2>Industry data quality checklist</h2>
+        <p class="lead">Before touching a single cleaning function, a working data professional runs through these questions on every new dataset.</p>
+
+        <div class="checklist">
+          <div class="cl-item"><span class="cl-box"><svg viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-6" stroke="#0E7C86" stroke-width="1.8"/></svg></span>Are there duplicates?</div>
+          <div class="cl-item"><span class="cl-box"><svg viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-6" stroke="#0E7C86" stroke-width="1.8"/></svg></span>Are values missing?</div>
+          <div class="cl-item"><span class="cl-box"><svg viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-6" stroke="#0E7C86" stroke-width="1.8"/></svg></span>Are data types correct?</div>
+          <div class="cl-item"><span class="cl-box"><svg viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-6" stroke="#0E7C86" stroke-width="1.8"/></svg></span>Are categories consistent?</div>
+          <div class="cl-item"><span class="cl-box"><svg viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-6" stroke="#0E7C86" stroke-width="1.8"/></svg></span>Are there impossible values?</div>
+          <div class="cl-item"><span class="cl-box"><svg viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-6" stroke="#0E7C86" stroke-width="1.8"/></svg></span>Are there outliers?</div>
+          <div class="cl-item"><span class="cl-box"><svg viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-6" stroke="#0E7C86" stroke-width="1.8"/></svg></span>Are column names meaningful?</div>
+          <div class="cl-item"><span class="cl-box"><svg viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-6" stroke="#0E7C86" stroke-width="1.8"/></svg></span>Are units consistent?</div>
+        </div>
+
+        <div class="outcome">
+          <div class="oc-label">The core lesson of this module</div>
+          <p class="oc-note">This mindset is more important than memorizing pandas commands.</p>
+          <p class="oc-sub">Commands change between libraries and languages. The habit of interrogating a dataset before trusting it does not — and it's what separates a script that "runs" from an analysis that's actually correct.</p>
+        </div>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<footer>MODULE 05 — DATA EXPLORATION &amp; DATA QUALITY</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/python.min.js"></script>
+<script>
+  if (window.hljs) { hljs.highlightAll(); }
+
+  function copyCode(btn, id){
+    const code = document.getElementById(id).innerText;
+    navigator.clipboard.writeText(code).then(()=>{
+      const old = btn.textContent;
+      btn.textContent = 'Copied';
+      setTimeout(()=>btn.textContent = old, 1400);
+    });
+  }
+
+  const links = document.querySelectorAll('.tocLink');
+  const sections = Array.from(links).map(l => document.querySelector(l.getAttribute('href')));
+  function onScroll(){
+    let current = sections[0];
+    const y = window.scrollY + 120;
+    sections.forEach(sec => { if (sec && sec.offsetTop <= y) current = sec; });
+    links.forEach(l => l.classList.toggle('active', l.getAttribute('href') === '#' + current.id));
+  }
+  window.addEventListener('scroll', onScroll);
+  onScroll();
+</script>
+</body>
+</html>
